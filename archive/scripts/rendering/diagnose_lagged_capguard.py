@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]  # archive/scripts/rendering/ -> repo root
 sys.path.insert(0, str(ROOT / "src"))
 
 import matplotlib  # noqa: E402
@@ -364,7 +364,8 @@ certified 7/7. This page only plots numbers already measured under
 <code>artifacts/lagged-capguard/01-us/</code>.</div>
 {sections}
 <footer>lagged-capguard-001 &middot; commit {summary["git_head"][:12]} &middot;
-{summary["when"]} UTC &middot; scripts/rendering/diagnose_lagged_capguard.py</footer>
+{summary["when"]} UTC &middot;
+archive/scripts/rendering/diagnose_lagged_capguard.py</footer>
 </main></body></html>"""
     out = OUT_DOCS / "capguard-autopsy.html"
     out.write_text(html, encoding="utf-8")

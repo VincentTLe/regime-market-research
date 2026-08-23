@@ -19,7 +19,7 @@ public definitions:
   containing bear episode overlaps >= 1 bear episode of the other path, else
   "missing" (their episode) / "extra" (our episode)
 
-Run from the repo root:  uv run python scripts/audit/verify_replication_atlas.py
+Run from the repo root:  uv run python archive/scripts/audit/verify_replication_atlas.py
 Exit code 0 iff every item passes. Stops at the first FAIL.
 """
 
