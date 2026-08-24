@@ -1,0 +1,29 @@
+{
+  "claim_label": "calibrated baseline",
+  "conclusion": "directional gate passed on the calibrated baseline",
+  "markets": [
+    {
+      "market": "de",
+      "mdd_below_buy_and_hold": true,
+      "passed": true,
+      "sharpe_above_buy_and_hold": true,
+      "sharpe_above_hmm": true
+    },
+    {
+      "market": "jp",
+      "mdd_below_buy_and_hold": true,
+      "passed": true,
+      "sharpe_above_buy_and_hold": true,
+      "sharpe_above_hmm": true
+    },
+    {
+      "market": "us",
+      "mdd_below_buy_and_hold": true,
+      "passed": true,
+      "sharpe_above_buy_and_hold": true,
+      "sharpe_above_hmm": true
+    }
+  ],
+  "passed": true,
+  "primary_delay": 1
+}
