@@ -29,11 +29,28 @@ The comparator is the sealed **v11-ninit60** fixed Jump Model, set up in
 every new idea is measured against the same numbers instead of a freshly
 refitted target. It does not mean the comparator is correct, and it does not
 mean it is neutral. The paper never publishes its lambda grid, so ours was
-chosen: out of hundreds to thousands of candidate grids, the one picked in each
-market was the one whose daily regime path agreed most closely with the state
-sequence the authors printed in their own Figure 5. The comparator is therefore
-fitted to published output, and "the new model beats the baseline" is a
-statement about that fitted reference, not about the authors' model.
+searched for, in two stages, against numbers the authors did publish.
+
+The first stage was exhaustive. Every subset of size 2 to 8 that can be drawn
+from a fixed 29-value lambda menu — 6,474,511 grids in all — was scored against
+the performance figures the paper prints in its Table 4 and Table 5. What
+survived were the grids landing closest to those published cells: 36,657 in the
+US, which reach all fourteen of them, and, because no German or Japanese grid
+reaches all fourteen, the best available thirteen out of fourteen, which is 366
+grids in Germany and 2,948 in Japan.
+
+The second stage ranked those survivors — all of them, not a sample — by how
+closely each grid's own daily regime path agrees with the state sequence the
+authors printed in their Figure 5. The top-ranked grid in each market is the
+grid the sealed v11 baseline uses.
+
+The comparator is therefore fitted to published output at both stages, first to
+the published tables and then to the published figure, and "the new model beats
+the baseline" is a statement about that fitted reference, not about the authors'
+model. Evidence: `docs/audit/2026-07-31-jm-exhaustive-search.md`,
+`docs/audit/2026-07-31-jm-per-market-grids.md`,
+`docs/audit/2026-08-07-grid-selection-rule-001-receipt.md`,
+`artifacts/grid-selection-rule/01-rule/summary.csv`.
 
 `configs/baselines/legacy/` holds older versions (v10, v9.4, and earlier). They
 use different lambda grids and optimizer settings. They are history, not the
@@ -46,11 +63,18 @@ then picks none of the three adopted grids. Germany is the worst case: refit at
 drops out of the candidate list altogether. The US and Japanese grids stay
 eligible but are no longer top-ranked. Separately, no market's fits are known to
 be fully converged — running the optimizer three times harder (180 restarts
-instead of 60) still finds a better fit on 41 of 1619 windows, and changes the
-model's fitted state on 11 days. Whether those 11 days move the traded position,
-the reported Sharpe, or the P&L has never been computed; that run stopped at
-counting. Nothing has been resealed in response; this is an open owner decision,
-and it is part of why the first question below is still open. Evidence:
+instead of 60) still finds a better fit on 41 of the 1619 (window, lambda) fits
+it compares, and it reports 11 fitted-state mismatches. Read that 11 narrowly.
+The diagnostic walks every candidate lambda in each market's grid, counts the
+days on which that lambda's fitted state differs from the sealed run's, and adds
+those counts up across all three markets. So 11 is a total of lambda-day
+mismatches, not 11 distinct calendar dates — one date can be counted once per
+lambda — and the diagnostic never asks whether any of them belong to the lambda
+the selection rule would actually pick for trading. Whether the traded position,
+the reported Sharpe, or the P&L moves at all has never been computed; that run
+stopped at counting. Nothing has been resealed in response; this is an open
+owner decision, and it is part of why the first question below is still open.
+Evidence:
 `docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`,
 `artifacts/v12-stress-gate/`, `artifacts/optimizer-fidelity/report.txt`.
 
