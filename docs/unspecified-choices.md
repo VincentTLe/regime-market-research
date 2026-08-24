@@ -78,9 +78,11 @@ and by standing owner instruction (2026-07-31, registry `AMENDED` on
 `jm-standardizer-geometry-002`) it must not be proposed, run, or cited as an
 author-method candidate at all. The numbers stay so nobody re-measures them.
 
-The v8.4 row is **two contract generations stale**: the current sealed baseline
-is v10 (`fixed-baselines-36ca1ace131c-…`), where the fixed JM reads us 0.683,
-de 0.398, jp 0.291. Quote the run, never the word "current".
+The v8.4 row is stale. The numbers above belong to the v8.4 run; the v10 run
+(`fixed-baselines-36ca1ace131c-…`) reads us 0.683, de 0.398, jp 0.291; the
+sealed baseline as of 2026-08-08 is v11-ninit60
+(`fixed-baselines-5b12efa2948c-…`), where the fixed JM reads us 0.677, de 0.389,
+jp 0.294. Quote the run, never the word "current".
 
 **Axis status.** This row is no longer open. `jm-standardizer-geometry-002/-003`
 exhausted the author-artifact geometry family — no cadence reproduces the
@@ -115,12 +117,40 @@ calls 50 to 100 "a typical value" (line 638-639).
 **What the paper does NOT say.** The candidate grid actually used for selection.
 Table 3 is an illustration of persistence, not a stated search space.
 
-**What we chose.** `lambda_grid = [0, 5, 15, 35, 70, 150]`, matching Table 3.
+**What we chose.** `[0, 5, 15, 35, 70, 150]`, matching Table 3, was the v8.4-era
+choice and is no longer what runs. The sealed v11-ninit60 baseline uses
+per-market grids that resemble Table 3 not at all: us `[0, 0.1, 20, 220]`, de
+`[0.1, 1, 10, 21.544…, 26.827…, 40, 100, 500]`, jp `[1.931…, 20, 25, 26.827…,
+40, 51.795…, 220]`. These were not read off the paper. They were searched
+against the paper's published Table 4 and Table 5 cells, then ranked by daily
+agreement with the authors' printed Figure 5 state path. Agreement with
+published output is therefore by construction, and this row carries the same
+circularity disclosure as row 1: **no result may be described as independent of
+the lambda grid.** Note the two stages: the candidate pool was filtered on the
+paper's published Sharpe, turnover and drawdown cells, and only the final
+ranking among survivors avoided strategy metrics.
 
-**Consequence.** On v8.4 the Japanese JM parks at the top of that grid in 30.4%
-of months (`boundaries.csv`), i.e. the selector wants more persistence than the
-grid offers. Widening was measured on the HMM side and moved the optimum rather
-than bracketing it; the same test has not been run for lambda.
+**And the choice is not stable.** Rerun at the 60 optimizer restarts the sealed
+baseline actually uses, that same rule picks none of the three adopted grids,
+and Germany's leaves the eligible set entirely
+(`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`). Nothing
+has been resealed in response. The size of this free parameter has been
+measured once, for Germany: across twelve equally admissible grids the fixed JM
+spanned Sharpe 0.398 to 0.457 (registry `baseline-reseal-v10` NOTE) — about
+0.06, which is roughly three times the largest paired improvement the project
+has reported for any challenger. Treat this row as the largest known
+unresolved lever, not a settled choice.
+
+**Consequence.** The upper-edge problem did not go away with the wider grids. In
+the sealed v11 run at delay 1 the fixed JM selects the grid's largest lambda in
+18.1% of German months, 28.7% of US months and 37.0% of Japanese months
+(`boundaries.csv`) — the selector still wants more persistence than the grid
+offers, so the grid endpoint rather than the data is setting the penalty in
+those months. The stop that would have caught this,
+`upper_boundary_month_fraction_limit`, is 1.0 under the calibrated contract, and
+no fraction can exceed 1.0, so it reports and cannot fail. Widening was measured
+on the HMM side and moved the optimum rather than bracketing it; the same test
+has not been run for lambda.
 
 ---
 

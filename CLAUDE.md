@@ -60,6 +60,12 @@ whether the scientific conclusion changed.
 
 ### What could still be wrong
 
+### What the checks do NOT prove
+
+Plain English. Say what the tests, hashes, replays, and reviews actually
+establish, and what they leave untouched. A passing suite, a matching hash, or a
+second agent agreeing is not evidence that the science is right.
+
 ### Technical details
 
 Hashes, run IDs, file paths, test output, and formulas go here — last.

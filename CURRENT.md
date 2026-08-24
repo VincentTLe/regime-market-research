@@ -27,15 +27,32 @@ The comparator is the sealed **v11-ninit60** fixed Jump Model, set up in
 
 *Sealed* means its settings and its fitted results are frozen and saved, so
 every new idea is measured against the same numbers instead of a freshly
-refitted target.
+refitted target. It does not mean the comparator is correct, and it does not
+mean it is neutral. The paper never publishes its lambda grid, so ours was
+chosen: out of hundreds to thousands of candidate grids, the one picked in each
+market was the one whose daily regime path agreed most closely with the state
+sequence the authors printed in their own Figure 5. The comparator is therefore
+fitted to published output, and "the new model beats the baseline" is a
+statement about that fitted reference, not about the authors' model.
 
 `configs/baselines/legacy/` holds older versions (v10, v9.4, and earlier). They
 use different lambda grids and optimizer settings. They are history, not the
 current comparator, and auditing one of them answers a different question.
 
-Known problem: the German leg is not clean. Its lambda grid fails the rule that
-was supposed to pick it, and some German fits did not fully converge. That is
-part of why the first question below is still open.
+Known problem, and it is not only German. That grid-choosing rule was rerun
+using the 60 optimizer restarts the sealed baseline actually runs at, and it
+then picks none of the three adopted grids. Germany is the worst case: refit at
+60 restarts, its grid stops meeting the eligibility bar the rule required, so it
+drops out of the candidate list altogether. The US and Japanese grids stay
+eligible but are no longer top-ranked. Separately, no market's fits are known to
+be fully converged — running the optimizer three times harder (180 restarts
+instead of 60) still finds a better fit on 41 of 1619 windows, and changes the
+model's fitted state on 11 days. Whether those 11 days move the traded position,
+the reported Sharpe, or the P&L has never been computed; that run stopped at
+counting. Nothing has been resealed in response; this is an open owner decision,
+and it is part of why the first question below is still open. Evidence:
+`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`,
+`artifacts/v12-stress-gate/`, `artifacts/optimizer-fidelity/report.txt`.
 
 ## What is not settled
 
@@ -64,13 +81,17 @@ Detailed contracts, hashes, receipts, registry entries, and AI session logs are 
 ## Repository cleanup — what is left
 
 Material that is history rather than current work now sits under `archive/`,
-including the old audit scripts. Only one audit remains live:
-`scripts/audit/check_paper_claims.py`, which checks that quotations attributed
-to the paper are really in it.
+including the old audit scripts. Only one standalone audit script remains:
+`scripts/audit/check_paper_claims.py`. It checks the quotations that carry an
+explicit `[line N]` citation, and nothing else — unannotated prose is reported
+as unchecked, and its target list no longer reaches the sealed configs, which do
+quote the paper. Checking code also still lives inside the package
+(`simple_jm_verifier.py`) and in four audit-labelled test modules.
 
 Still to do: `docs/theory/da-jm-formalization.md` describes work this file has
-parked, and `docs/audit/` is 22 historical receipts kept only because the claim
-checker reads them.
+parked, and `docs/audit/` is 22 historical receipts. Six of them supply 21 of
+the 43 quotations the claim checker verifies; the other 16 contribute none and
+are kept as history only.
 
 ## Current stop rule
 

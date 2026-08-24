@@ -56,8 +56,10 @@ all three markets. A few older or auxiliary experiments used shorter windows.
 
 The raw data starts in the 1960s, but that early part is warm-up, not results.
 Before the model can make its first decision it needs 3000 trading days to fit
-(about 12 years) and then 8 more years to pick lambda. So the first scored month
-is January 1990.
+(about 12 years) and then 8 more years to pick lambda. That warm-up finishes
+during 1989 in all three markets, so it is not what produces January 1990: the
+baseline config asks for `1990-01-01` so the period lines up with the paper's.
+Scoring could have started several months earlier.
 
 Anything after `2023-12-31` is off limits without the owner's permission.
 
