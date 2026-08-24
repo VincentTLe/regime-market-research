@@ -23,6 +23,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
+# the atlas renderer is archived; imported here for its plotting grammar only
+sys.path.insert(0, str(ROOT / "archive" / "scripts" / "rendering"))
 
 import matplotlib  # noqa: E402
 
@@ -30,7 +32,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
-from rendering.render_replication_atlas import (  # noqa: E402
+from render_replication_atlas import (  # noqa: E402
     C_CONST,
     C_THEIRS,
     C_V94,

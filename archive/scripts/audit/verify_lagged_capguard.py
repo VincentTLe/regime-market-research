@@ -31,7 +31,7 @@ Checks (one PASS/FAIL line each; exit code 0 iff all pass):
      switch days on both grids (zero manufactured), g2 partition
      6 shared / 33 lagged-only / 5 fixed-only
 
-Run from the repo root:  uv run python scripts/audit/verify_lagged_capguard.py
+Run from the repo root:  uv run python archive/scripts/audit/verify_lagged_capguard.py
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ import pandas as pd
 from adaptive_jump.backtest import performance_metrics
 from adaptive_jump.config import load_config
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]  # archive/scripts/audit/ -> repo root
 ART = ROOT / "artifacts" / "lagged-capguard" / "01-us"
 SEALED = (
     ROOT

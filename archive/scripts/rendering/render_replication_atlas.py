@@ -29,7 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]  # archive/scripts/rendering/ -> repo root
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -997,7 +997,7 @@ thẳng position; so regime thì un-shift đúng convention của -004.</li>
 <section><h2>Provenance</h2>
 <p style="color:var(--muted)">commit <code>{provenance["git_head"]}</code> ·
 rendered {provenance["generated_utc"]} UTC · script
-<code>scripts/rendering/render_replication_atlas.py</code></p>
+<code>archive/scripts/rendering/render_replication_atlas.py</code></p>
 {provenance_table()}</section>
 <footer>adaptive_jump_model · replication atlas · giai đoạn đóng của bước tái lập —
 kế tiếp: extension trên baseline frozen v10.</footer>

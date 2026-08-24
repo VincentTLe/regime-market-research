@@ -26,6 +26,14 @@ paper/ssrn-5235747.pdf
 paper/ssrn-5817083.pdf
 paper/ssrn-6933278.pdf
 
+# Rendered figure pages. The archived copies of the two HTML deliverables live
+# in archive/docs/. Only the atlas carries a successful verifier certification;
+# the capguard verifier still fails its frozen spec-hash gate, so that page is
+# an archived copy of an unverified diagnosis. These paths are where the
+# archived renderers in archive/scripts/rendering/ rewrite them.
+docs/atlas/
+docs/capguard-diagnosis/
+
 # Market data and generated outputs
 data/*.tar.zst
 data/raw/*
