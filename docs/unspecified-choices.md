@@ -136,21 +136,28 @@ and Germany's leaves the eligible set entirely
 (`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`). Nothing
 has been resealed in response. The size of this free parameter has been
 measured once, for Germany: across twelve equally admissible grids the fixed JM
-spanned Sharpe 0.398 to 0.457 (registry `baseline-reseal-v10` NOTE) — about
-0.06, which is roughly three times the largest paired improvement the project
-has reported for any challenger. Treat this row as the largest known
-unresolved lever, not a settled choice.
+spanned Sharpe 0.398 to 0.457 (registry `baseline-reseal-v10` NOTE) — a spread
+of about 0.06 attributable to the grid choice alone. That spread has not been
+put on a common footing with any challenger's paired improvement, so it is not
+stated here as a multiple of one. Treat this row as an unresolved lever, not a
+settled choice.
 
-**Consequence.** The upper-edge problem did not go away with the wider grids. In
-the sealed v11 run at delay 1 the fixed JM selects the grid's largest lambda in
-18.1% of German months, 28.7% of US months and 37.0% of Japanese months
-(`boundaries.csv`) — the selector still wants more persistence than the grid
-offers, so the grid endpoint rather than the data is setting the penalty in
-those months. The stop that would have caught this,
-`upper_boundary_month_fraction_limit`, is 1.0 under the calibrated contract, and
-no fraction can exceed 1.0, so it reports and cannot fail. Widening was measured
-on the HMM side and moved the optimum rather than bracketing it; the same test
-has not been run for lambda.
+**An unresolved boundary diagnostic.** In the sealed v11 run at delay 1 the
+fixed JM selects the grid's largest lambda in 18.1% of German months, 28.7% of
+US months and 37.0% of Japanese months (`boundaries.csv`). That is the whole
+measured fact, and it should be read narrowly: the largest *tested* lambda
+scored best in those months. It does not establish that the selector would
+prefer a still larger penalty, and it does not establish that the grid endpoint
+rather than the data set the choice, because no lambda-widening test has been
+run. The statistic is also not self-interpreting — this repository has already
+measured a case where padding a grid with a candidate almost nobody selects
+flipped the same boundary gate from FAIL to PASS while turnover, shift count
+and every decision stayed identical
+(`docs/audit/2026-07-29-codex-review-verdicts.md`). The stop that would report
+on it, `upper_boundary_month_fraction_limit`, is 1.0 under the calibrated
+contract, and no fraction can exceed 1.0, so it reports and cannot fail.
+Widening was measured on the HMM side and moved the optimum rather than
+bracketing it; the same test has not been run for lambda.
 
 ---
 
