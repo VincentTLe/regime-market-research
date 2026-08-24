@@ -106,10 +106,12 @@ Detailed contracts, hashes, receipts, registry entries, and AI session logs are 
 
 Material that is history rather than current work now sits under `archive/`,
 including the old audit scripts. Only one standalone audit script remains:
-`scripts/audit/check_paper_claims.py`. It checks the quotations that carry an
-explicit `[line N]` citation, and nothing else — unannotated prose is reported
-as unchecked, and its target list no longer reaches the sealed configs, which do
-quote the paper. Checking code also still lives inside the package
+`scripts/audit/check_paper_claims.py`. It does two things: it checks the
+quotations that carry an explicit `[line N]` citation, and it runs a refutation
+pass over five configured terms the paper is asserted *not* to contain, failing
+if any of them turns up in the paper body. It does not check unannotated prose,
+which it reports as unchecked, and its target list no longer reaches the sealed
+configs, which do quote the paper. Checking code also still lives inside the package
 (`simple_jm_verifier.py`) and in four audit-labelled test modules.
 
 Still to do: `docs/theory/da-jm-formalization.md` describes work this file has

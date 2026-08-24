@@ -128,36 +128,50 @@ published output is therefore by construction, and this row carries the same
 circularity disclosure as row 1: **no result may be described as independent of
 the lambda grid.** Note the two stages: the candidate pool was filtered on the
 paper's published Sharpe, turnover and drawdown cells, and only the final
-ranking among survivors avoided strategy metrics.
+ranking among survivors avoided strategy metrics. The filter used the eight
+Table-4 cells (CAGR, volatility, Sharpe, maximum drawdown, Calmar, 5% expected
+shortfall, turnover and leverage) plus the three Table-5 cells at each long
+delay.
 
 **And the choice is not stable.** Rerun at the 60 optimizer restarts the sealed
 baseline actually uses, that same rule picks none of the three adopted grids,
 and Germany's leaves the eligible set entirely
 (`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`). Nothing
 has been resealed in response. The size of this free parameter has been
-measured once, for Germany: across twelve equally admissible grids the fixed JM
-spanned Sharpe 0.398 to 0.457 (registry `baseline-reseal-v10` NOTE) — a spread
-of about 0.06 attributable to the grid choice alone. That spread has not been
+measured once, for Germany: across the twelve example grids the -009 artifacts
+list for that market, all of them reaching 13 of 14 published cells, the fixed
+JM spanned Sharpe 0.398 to 0.457 (registry `baseline-reseal-v10` NOTE) — a
+spread of about 0.06 with the rest of the machinery held fixed. Those twelve are
+an example subset of the 366 admissible German grids, not a sample chosen to
+span them. That spread has not been
 put on a common footing with any challenger's paired improvement, so it is not
 stated here as a multiple of one. Treat this row as an unresolved lever, not a
 settled choice.
 
-**An unresolved boundary diagnostic.** In the sealed v11 run at delay 1 the
-fixed JM selects the grid's largest lambda in 18.1% of German months, 28.7% of
-US months and 37.0% of Japanese months (`boundaries.csv`). That is the whole
-measured fact, and it should be read narrowly: the largest *tested* lambda
-scored best in those months. It does not establish that the selector would
-prefer a still larger penalty, and it does not establish that the grid endpoint
-rather than the data set the choice, because no lambda-widening test has been
-run. The statistic is also not self-interpreting — this repository has already
-measured a case where padding a grid with a candidate almost nobody selects
-flipped the same boundary gate from FAIL to PASS while turnover, shift count
-and every decision stayed identical
-(`docs/audit/2026-07-29-codex-review-verdicts.md`). The stop that would report
-on it, `upper_boundary_month_fraction_limit`, is 1.0 under the calibrated
-contract, and no fraction can exceed 1.0, so it reports and cannot fail.
-Widening was measured on the HMM side and moved the optimum rather than
-bracketing it; the same test has not been run for lambda.
+**An unresolved boundary diagnostic, and its evidence is not in the
+repository.** Each run writes the fraction of months in which the fixed JM
+selects its grid's largest lambda to that run's `boundaries.csv`. Those files
+live under `artifacts/`, which `.gitignore` excludes, and no tracked file
+records the sealed v11 run's fractions. Earlier drafts of this row quoted exact
+percentages from a local copy; they are removed, because a number a fresh
+checkout cannot reproduce is not repository evidence. To see them, rerun the
+sealed baseline and read its own `boundaries.csv`.
+
+Three things about this diagnostic *are* checkable here, and they all say the
+same thing — it is unresolved. First, whatever the fraction is, it would only
+show that the largest *tested* lambda scored best in those months; it would not
+show that the selector wants a still larger penalty, or that the endpoint rather
+than the data set the choice, because no lambda-widening test has been run.
+Second, the statistic is not self-interpreting: padding the German HMM grid with
+a candidate almost nobody selects flipped the same boundary gate from FAIL to
+PASS with turnover identical to six decimal places and the shift count unchanged
+at 144, though Sharpe did move slightly, 0.2228 to 0.2202
+(`docs/audit/2026-07-29-codex-review-verdicts.md`). Third, the stop that would
+report on it, `upper_boundary_month_fraction_limit`, is 1.0 in
+`configs/baselines/research-calibrated-v11.toml`, and no fraction can exceed
+1.0, so it reports and cannot fail. Widening was measured on the HMM side and
+moved the optimum rather than bracketing it; the same test has not been run for
+lambda.
 
 ---
 

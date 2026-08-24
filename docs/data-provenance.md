@@ -41,8 +41,9 @@ The binding constraint is **not history length. It is total return.** Free daily
 history is easy to find; free daily *total-return* history is not, and the paper
 is explicit that it uses total-return series. **All three markets** need a
 dividend reconstruction over part of the span. The US and German reconstructions
-sit entirely inside the training window, so no reconstructed *return* is ever
-scored in the reported 1990-2023 period. They still reach that period
+sit entirely inside the training window, so no *US or German* reconstructed
+return is scored in the reported 1990-2023 period. They still reach that
+period
 indirectly, and this should not be read as isolation: they sit inside the
 3000-day windows that fit the early-1990s models, and the expanding
 standardizer keeps every past observation in its mean and standard deviation
