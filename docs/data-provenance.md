@@ -129,7 +129,7 @@ causal one.
 | 2022-06-01 onward | official Nikkei 225 Total Return × 1.006144 | official returns unchanged; one constant carries the level on from the bridge |
 | 2020-07-10 .. 2022-05-31 | `^N225` price path + accrual realised over the 252 official sessions ending 2020-07-09 (0.02178 log/yr) | bridges the mirror hole using only data that existed on 2020-07-09 |
 | 2011-12-19 .. 2020-07-09 | official Nikkei 225 Total Return | used as published |
-| 1965 .. 2011-12-18 | `^N225` price path + the *prior* calendar year's JST dividend yield | reconstructed; level anchored at the first official value (a scale, not a return) |
+| 1965 .. 2011-12-18 | `^N225` price path + the *prior* calendar year's JST dividend yield | reconstructed; level anchored at the first official value (a scale, not a return). JST's codebook defines `eq_dp[t] = dividend[t]/p[t]`, sourced for Japan 1952–2015 from Bureau of Statistics Japan tables 14-25-a/b (whole Tokyo exchange, not the Nikkei 225); year-end vs annual-average price not stated; see the 2026-08-28 receipt |
 
 **`data/external/jp_equity_tr.csv`** (sha256 `e8717952…`, read by v11 and
 earlier; kept so those sealed runs rebuild byte-identically). **Not causal**:

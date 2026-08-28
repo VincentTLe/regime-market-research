@@ -42,8 +42,7 @@ change; nothing here is an independent check.
   after the hole is multiplied by 1.006144 so the level continues from the
   bridge — official returns unchanged.
 - `configs/baselines/research-calibrated-reconstruction-v11.toml`
-  (config_sha256 `d8bdf14ff66073b2` …; the first execution used an earlier byte-identical
-  file except for `frozen_at_utc`, see below).
+  (config_sha256 `3448b85e0fecb8b4…`; see "Executed three times" below).
   `diff` against `research-calibrated-v11.toml`: `config_id`,
   `frozen_at_utc`, a 13-line header comment, and the Japanese equity
   `file_path` / `sha256` / `construction` / deviation text. Grids, n_init=60,
@@ -71,22 +70,26 @@ not changed.
 
 ## The rerun
 
-- Acquisition `calibrated-reconstruction-v11-20260828T025104Z`; the FRED DTB3
+- Acquisition `calibrated-reconstruction-v11-20260828T033808Z`; the FRED DTB3
   download and every non-Japanese raw/processed file are byte-identical to the
   sealed v11 acquisition (checked file by file).
-- Run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`, executed in
-  a git worktree at commit `df2e0f7`. Local-only under `artifacts/`; its
+- Run `fixed-baselines-3448b85e0fec-97ee407c64ce-7130da99b50b`, executed in
+  a git worktree at commit `7130da9`. Local-only under `artifacts/`; its
   inputs are published as `data/snapshots/calibrated-reconstruction-v11/`.
-- **Executed twice.** The first execution
-  (`fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`, 01:54–02:35 UTC,
-  commit `67cf521`) ran under a config whose `frozen_at_utc` read a rounded
+- **Executed three times, same results.** Two owner/Codex review findings
+  changed the config file after it had been run, and a config change changes
+  the run id, so the study was re-executed each time rather than leaving a
+  run whose lock does not match the file. (1) `fixed-baselines-c4b7d476e5a4-…`
+  (01:54–02:35 UTC, commit `67cf521`): `frozen_at_utc` was a rounded
   `00:00:00Z`, earlier than the registry row that actually froze the
-  measurement list (01:52:35Z). The owner rejected that; the field was set to
-  the registry timestamp, which changes the config hash and therefore the run
-  id, and the study was re-executed. Of the 125 inventory files, 123 are
-  hash-identical between the two executions; only `config.lock.toml` and
-  `data-manifest.json` differ. Every number below is from the second
-  execution and is identical in the first.
+  measurement list (01:52:35Z); set to that timestamp. (2)
+  `fixed-baselines-d8bdf14ff660-…` (02:51–03:32 UTC, commit `df2e0f7`): the
+  config's `[data_policy].splice_documentation` still described the
+  superseded Japanese construction; rewritten to describe the causal one.
+  (3) the run above. Between consecutive executions, 123 of 125 inventory
+  files are hash-identical; only `config.lock.toml` and `data-manifest.json`
+  differ. Every number below is from the third execution and is identical in
+  the first two.
 
 ## What was measured (registry list a–g), old = v11-ninit60, new = this run
 
@@ -114,8 +117,14 @@ state differs, out of 10,342):
 **(d) Which lambda the monthly rule picked** (months out of 409):
 delay 1: 92 · delay 5: 113 · delay 10: 65.
 
-**(e) Traded fixed-JM position** (days out of 8,347): delay 1: 70 ·
+**(e) Selected fixed-JM signal, unshifted** (days out of 8,347): delay 1: 70 ·
 delay 5: 237 · delay 10: 233.
+
+**(e′) Position actually held on trade dates** — the signal shifted by
+delay+1 sessions as `backtest.apply_signal` builds it, read from
+`jp/trades/*.csv`, out of 8,336 trade dates: fixed_jm 70 / 237 / 233 and
+hmm 5 / 6 / 5 at delays 1 / 5 / 10. (Added after a Codex review pointed out
+that (e) was labelled as the traded position; the counts coincide here.)
 
 **(f) Japanese strategy metrics, 1990-2023, 10 bp one-way cost:**
 
@@ -160,10 +169,39 @@ markets.
 ## What could still be wrong
 
 - The trailing-252-session accrual is one defensible causal rule among
-  several (a prior-year JST yield would be another). It was chosen before any
-  result was seen and is not tuned, but it is still a choice the paper does
-  not make; it belongs in `docs/unspecified-choices.md` if the Japanese
-  reconstruction is ever re-opened.
+  several. It was chosen before any result was seen and is not tuned, but it
+  is still a choice the paper does not make; it belongs in
+  `docs/unspecified-choices.md` if the Japanese reconstruction is ever
+  re-opened.
+- **The prior-year JST yield and rule 1 (raised as a P1 by Codex on PR #31).**
+  Rule 1 asks whether the *information* existed on the day, not when a
+  database printed it. JST Macrohistory is a compilation first released in
+  2017, so no lag of any length makes its publication date precede 1990; by
+  that reading every JST-based reconstruction in this repository, including
+  the US and German ones, would be inadmissible. The reading used here: the
+  dividends paid on Nikkei constituents during year y−1 and the year-end
+  price were public facts on the first session of year y, so an accrual equal
+  to their ratio uses no information generated after the day. Whether JST's
+  figure is built only from year y−1 data was checked against the JST
+  documentation (2026-08-28, `JST_documentationR6.pdf` and the "Rate of Return
+  on Everything" data appendix, both downloaded from macrohistory.net):
+  the codebook defines `eq_dp[t] = dividend[t]/p[t]` and
+  `eq_tr[t] = (p[t]+d[t])/p[t−1] − 1`; for Japan 1952–2015 the appendix's
+  Table 27 sources capital gain and dividend return from the Bureau of
+  Statistics Japan, tables 14-25-a/b (Tokyo Stock Exchange 1st and 2nd
+  sections), plus Fujino and Akiyama (1977) stock-operation gains up to 1975.
+  So JST's value for year y−1 is an annual statistic of year y−1 prices and
+  dividends. Two limits remain: the codebook does not state whether `p[t]` is
+  the year-end or the annual-average price, and the underlying statistic
+  covers the whole Tokyo exchange, not the 225 Nikkei constituents — a proxy
+  this reconstruction has always used. The compiled yearbook figure for year
+  y−1 would typically be printed during year y; the argument here rests on
+  the underlying prices and dividends, not on the yearbook. Checked on the
+  Japan file: the codebook identity `eq_tr = eq_capgain + eq_dp·(1+eq_capgain)`
+  holds to 3e-8 for 1976–2020 and fails only through 1975 (residual up to
+  2.2 percentage points), exactly the years the appendix says carry the
+  extra Fujino–Akiyama stock-operation term — so the file behaves as the
+  codebook describes.
 - The level constant 1.006144 after 2022-05-31 means the series is no longer
   the official index level from then on. Returns, which are all the model and
   the backtest use, are the official ones.
@@ -185,8 +223,8 @@ receipt.
 ## Technical details
 
 - Old run `fixed-baselines-5b12efa2948c-d57a9e7d9c07-b277dea3beb3` (sealed
-  2026-08-08). New run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`,
-  02:51:09 → 03:32:02 UTC 2026-08-28 (41 min), worktree at commit `df2e0f7`,
+  2026-08-08). New run `fixed-baselines-3448b85e0fec-97ee407c64ce-7130da99b50b`,
+  03:38:23 → 04:19:34 UTC 2026-08-28 (41 min), worktree at commit `7130da9`,
   python 3.12, the repo `.venv` with the `data` extra installed
   (`uv sync --extra data --inexact`, requests 2.34.2 as in the sealed run).
 - `adaptive-jump verify --run …`: status complete, 125 inventory files, 27

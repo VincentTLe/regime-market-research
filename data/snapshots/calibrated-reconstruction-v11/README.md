@@ -2,7 +2,7 @@
 
 This folder is **archival evidence, never an input**. Nothing in the research
 code reads it. It is a byte-exact copy of the eighteen data files that the
-sealed run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e` (2026-08-28)
+sealed run `fixed-baselines-3448b85e0fec-97ee407c64ce-7130da99b50b` (2026-08-28)
 consumed, kept so that a fresh checkout can inspect exactly what that run saw.
 
 Do not edit anything here. If a file must change, the run it documents has
@@ -13,8 +13,8 @@ changed, and that is a new snapshot with a new id.
 | folder | files | what they are |
 |---|---|---|
 | `external/` | 5 | the processed series `configs/baselines/research-calibrated-reconstruction-v11.toml` pins by sha256 (S&P 500 TR, DAX TR dividend-adjusted, German cash ladder, Nikkei 225 TR built with causal dividend accruals, Japanese cash ladder) |
-| `raw/calibrated-reconstruction-v11-20260828T025104Z/` | 8 | the acquisition manifest, the FRED DTB3 download (`us_cash.csv`), and the six localfile copies as acquired |
-| `processed/calibrated-reconstruction-v11-20260828T025104Z/` | 6 | the canonical `date,value` series the model actually loads |
+| `raw/calibrated-reconstruction-v11-20260828T033808Z/` | 8 | the acquisition manifest, the FRED DTB3 download (`us_cash.csv`), and the six localfile copies as acquired |
+| `processed/calibrated-reconstruction-v11-20260828T033808Z/` | 6 | the canonical `date,value` series the model actually loads |
 | `SHA256SUMS` | — | sha256 of every file above |
 | `snapshot.json` | — | which config, which acquisition run, which sealed run |
 
