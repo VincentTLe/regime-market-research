@@ -117,7 +117,8 @@ def compare(old_run: Path, new_run: Path) -> tuple[list[dict], list[str]]:
             }
         )
         lines.append(
-            f"(e) jp delay {delay}: fixed-JM signal differs on {diff} of {total} days"
+            f"(e) jp delay {delay}: fixed-JM selected signal (unshifted) differs on "
+            f"{diff} of {total} days"
         )
         old_s = _states(old_run / f"jp/hmm-delay-{delay}/selected-signal.csv")[
             "selected_signal"
@@ -136,6 +137,26 @@ def compare(old_run: Path, new_run: Path) -> tuple[list[dict], list[str]]:
         lines.append(
             f"(e) jp delay {delay}: HMM signal differs on {diff} of {total} days"
         )
+        # (e') the position actually held on each trade date: the signal shifted
+        # by delay+1 sessions, as backtest.apply_signal builds it. This is the
+        # column P&L is computed from; (e) above is the unshifted signal.
+        for model in ("fixed_jm", "hmm"):
+            old_t = pd.read_csv(old_run / f"jp/trades/{model}-delay-{delay}.csv")
+            new_t = pd.read_csv(new_run / f"jp/trades/{model}-delay-{delay}.csv")
+            if not old_t["date"].equals(new_t["date"]):
+                raise SystemExit(f"trade dates differ for {model} delay {delay}")
+            diff = int((old_t["position"] != new_t["position"]).sum())
+            rows.append(
+                {
+                    "item": f"jp delay-{delay} {model} position differing trade dates",
+                    "old": len(old_t),
+                    "new": diff,
+                }
+            )
+            lines.append(
+                f"(e') jp delay {delay}: {model} held position differs on {diff} of "
+                f"{len(old_t)} trade dates"
+            )
 
     # (f) jp metrics.
     old_m = pd.read_csv(old_run / "metrics.csv")
