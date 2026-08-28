@@ -2,9 +2,10 @@
 
 Every canonical series below is rebuilt deterministically by
 `scripts/data/build_external_sources.py` from sha256-pinned raw inputs in
-`data/external/inputs/`, and every output hash is pinned again in the frozen
-research contract (`research-expanding-v9-3.toml`). The builder refuses to run
-if any input hash has moved.
+`data/external/inputs/`, and every output hash is pinned again in the sealed
+baseline contract — currently `configs/baselines/research-calibrated-v11.toml`.
+The five output hashes are unchanged since `research-expanding-v9-3.toml`, which
+is now legacy. The builder refuses to run if any input hash has moved.
 
 ## What the paper uses, and why we cannot
 
@@ -40,12 +41,19 @@ The binding constraint is **not history length. It is total return.** Free daily
 history is easy to find; free daily *total-return* history is not, and the paper
 is explicit that it uses total-return series. **All three markets** need a
 dividend reconstruction over part of the span. The US and German reconstructions
-sit entirely inside the training window and never touch the reported 1990-2023
-period. They also spread each month's (US, Shiller) or year's (Germany, JST)
-dividend figure across the sessions of that same month or year, which is not
-causal within the period — but every scored decision is dated 1990 or later,
-when all of those figures were already known, so no reported signal depends on
-information from after its own day. They are recorded here, not changed. The Japanese one does: our official N225TR mirror begins only
+sit entirely inside the training window, so no *US or German* reconstructed
+return is scored in the reported 1990-2023 period. They still reach that
+period
+indirectly, and this should not be read as isolation: they sit inside the
+3000-day windows that fit the early-1990s models, and the expanding
+standardizer keeps every past observation in its mean and standard deviation
+permanently, so they help set the scale of every feature that is scored. They also spread each month's (US, Shiller) or
+year's (Germany, JST) dividend figure across the sessions of that same month or
+year, which is not causal within the period — but every scored decision is
+dated 1990 or later, after all of those dividends and prices had occurred, so no
+scored signal depends on information from after its own day. They are recorded
+here, not changed. The Japanese reconstruction is different in kind, because it
+is scored directly: our official N225TR mirror begins only
 2011-12-19, so 1990-2011 of the *reported* period rests on a reconstruction. Its
 accuracy is evidenced rather than assumed — chained back 32 years it reaches
 6,470.24 against Nikkei's own 1979-12-28 base of 6,569.47, a drift of 0.048
