@@ -13,7 +13,7 @@ import pytest
 from adaptive_jump.config import load_config, resolve_repo_root
 
 ROOT = Path(__file__).resolve().parents[1]
-CANONICAL_CONFIG = "configs/baselines/research-calibrated-v11.toml"
+CANONICAL_CONFIG = "configs/baselines/research-calibrated-reconstruction-v11.toml"
 LEGACY_CONFIGS = (
     "configs/baselines/legacy/research.toml",
     "configs/baselines/legacy/research-expanding-v8-5.toml",
@@ -21,6 +21,7 @@ LEGACY_CONFIGS = (
     "configs/baselines/legacy/research-expanding-v9-4.toml",
     "configs/baselines/legacy/research-calibrated-v10.toml",
     "configs/baselines/legacy/research-calibrated-v10-ninit60.toml",
+    "configs/baselines/legacy/research-calibrated-v11.toml",
 )
 CONFIG_NAMES = (CANONICAL_CONFIG, *LEGACY_CONFIGS)
 
@@ -48,11 +49,11 @@ def test_every_protocol_config_resolves_the_real_repository(relative: str) -> No
 
 
 def test_the_canonical_comparator_sits_above_the_superseded_ones() -> None:
-    """v11 is the current comparator; the six it replaced sit one level down."""
+    """The comparator sits above; the seven configs it replaced sit below."""
     baselines = ROOT / "configs" / "baselines"
 
     assert [path.name for path in sorted(baselines.glob("*.toml"))] == [
-        "research-calibrated-v11.toml"
+        "research-calibrated-reconstruction-v11.toml"
     ]
     assert len(list((baselines / "legacy").glob("*.toml"))) == len(LEGACY_CONFIGS)
 
@@ -67,7 +68,7 @@ def test_no_protocol_config_is_left_at_the_repository_root() -> None:
     [
         "research-calibrated-v11.toml",
         "configs/research-calibrated-v11.toml",
-        "configs/baselines/research-calibrated-v11.toml",
+        "configs/baselines/research-calibrated-reconstruction-v11.toml",
         "configs/baselines/legacy/research-calibrated-v11.toml",
     ],
 )

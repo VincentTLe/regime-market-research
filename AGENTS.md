@@ -37,7 +37,7 @@ Do not make a large research change without owner approval.
 2. **Timing and cost are fixed.** A signal on day `t` earns its return two
    trading days later, on `t+2`, and pays its trading cost on that same day.
    The cost is 10 basis points one way. These numbers are set in
-   `configs/baselines/research-calibrated-v11.toml` and enforced in
+   `configs/baselines/research-calibrated-reconstruction-v11.toml` and enforced in
    `src/adaptive_jump/config.py`. Do not change them inside an experiment.
    Never show a result with no cost or no delay as if it were real strategy
    performance.
