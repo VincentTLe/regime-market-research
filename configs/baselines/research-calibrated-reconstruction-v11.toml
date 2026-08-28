@@ -103,16 +103,21 @@ local_research_only = true
 redistribute_raw_data = false
 allow_definition_splicing = true
 splice_documentation = """
-Documented splices, each validated at its overlap (scripts/build_external_sources.py):
+Documented splices, each validated at its overlap (scripts/data/build_external_sources.py):
 DE cash: OECD 3M interbank (<=1975-06) -> IMF IFS Germany T-bill (1975-07..2007-08)
 -> ECB euro-area 3M AAA month-start (>=2007-09); joint delta -0.09pp, std 0.18pp.
 JP cash: IMF IFS Japan T-bill (<=2017-06) -> BoJ 3M uncollateralized call (>=2017-07);
 28y overlap corr 0.986, NIRP-era joint delta ~0.
-JP equity: official Nikkei 225 TR from 2011-12-19; mirror hole 2020-07-09..2022-05-31
-bridged by the ^N225 price path with even daily dividend accrual calibrated so both
-official edges match exactly; 1970-2011 reconstructed from the ^N225 price path plus
-JST Macrohistory annual dividend yields, method validated on the 2012-2023 overlap
-(daily return corr 0.9977, implied yields within 0.3pp of JST eq_dp).
+JP equity (jp_equity_tr_causal.csv, build_jp_total_return_causal): official Nikkei 225
+TR 2011-12-19..2020-07-09 as published; mirror hole 2020-07-10..2022-05-31 bridged
+forward along the ^N225 price path with the dividend accrual realised over the 252
+official sessions ending 2020-07-09 (0.021775 log/yr) -- the end-of-hole value is not
+used; official series from 2022-05-31 multiplied by one constant (1.006144) so the
+level continues from the bridge, official returns unchanged; 1965..2011-12-18
+reconstructed from the ^N225 price path plus the PRIOR calendar year's JST Macrohistory
+eq_dp (never the current year's), level anchored at the first official value. This
+replaces the v11 construction (jp_equity_tr.csv), whose bridge was calibrated to the
+2022-05-31 endpoint and whose pre-2011 years used their own full-year yield.
 """
 allow_synthetic_backfill = false
 allow_forward_fill = false
