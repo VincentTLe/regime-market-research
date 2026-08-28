@@ -1,10 +1,10 @@
 {
   "claim_class": "ENGINEERING / SMOKE",
   "config_id": "calibrated-reconstruction-v11",
-  "config_path": "/tmp/ajm-jp2/configs/baselines/research-calibrated-reconstruction-v11.toml",
-  "config_sha256": "d8bdf14ff66073b2d562e8eea5b6026b8abc8d40fb4f94c4512c8b83564dcca3",
-  "created_at_utc": "2026-08-28T02:51:04.838442+00:00",
-  "git_sha": "df2e0f723d7e48f27b72a4c6096142802b77891c",
+  "config_path": "/tmp/ajm-jp3/configs/baselines/research-calibrated-reconstruction-v11.toml",
+  "config_sha256": "3448b85e0fecb8b4fda68b026cea38b1fbb1e86f0577d00bca64e6ac94d53451",
+  "created_at_utc": "2026-08-28T03:38:08.485729+00:00",
+  "git_sha": "7130da99b50b45a45b27dc1019e0217bc8e58719",
   "packages": {
     "adaptive-jump-model": "0.1.0",
     "pandas": "2.3.3",
@@ -12,7 +12,7 @@
   },
   "python": "3.12.3",
   "replication_cutoff": "2023-12-31",
-  "run_id": "calibrated-reconstruction-v11-20260828T025104Z",
+  "run_id": "calibrated-reconstruction-v11-20260828T033808Z",
   "sample_start": "1969-05-01",
   "schema_version": 1,
   "scientific_claim_allowed": false,
@@ -20,7 +20,7 @@
     {
       "canonical": {
         "bytes": 391092,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/us_equity.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/us_equity.csv",
         "sha256": "78195677c833b039cfb93f52803b2af172d8017fc2cbe5e7161bd4f6c9725c19"
       },
       "currency": "USD",
@@ -43,7 +43,7 @@
       },
       "raw": {
         "bytes": 415271,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/us_equity.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/us_equity.csv",
         "sha256": "5fcdf04f06188b3eedb495c236d6c8c8416f84ce4c7c3ba19e4c88c71f850d7f"
       },
       "retrieval": {
@@ -61,7 +61,7 @@
     {
       "canonical": {
         "bytes": 225138,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/us_cash.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/us_cash.csv",
         "sha256": "5a4131d3eb8ae076106a2f587212e49d79cd6efb922408f0aea9489f11ed5c83"
       },
       "currency": "USD",
@@ -84,7 +84,7 @@
       },
       "raw": {
         "bytes": 226513,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/us_cash.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/us_cash.csv",
         "sha256": "62106f6db8dcade6dc70bdd75ae89dc08720e6fdef7e012bb193aae7d8e74471"
       },
       "retrieval": {
@@ -103,7 +103,7 @@
     {
       "canonical": {
         "bytes": 306905,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/de_equity.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/de_equity.csv",
         "sha256": "503e95e08019fc4ba90d995f58bb91fde2227624d2c644cf357844ac69a9c2a9"
       },
       "currency": "EUR",
@@ -127,7 +127,7 @@
       },
       "raw": {
         "bytes": 339584,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/de_equity.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/de_equity.csv",
         "sha256": "ec496b7cd3d62503dc10b212d1f215fcf70eccaa84265f611076b6888fe846be"
       },
       "retrieval": {
@@ -145,7 +145,7 @@
     {
       "canonical": {
         "bytes": 13211,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/de_cash.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/de_cash.csv",
         "sha256": "e00502df3f6a1cf9826a1a0305c3c75a8de23923f9c220391557a0d4595f9b6c"
       },
       "currency": "EUR",
@@ -169,7 +169,7 @@
       },
       "raw": {
         "bytes": 14037,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/de_cash.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/de_cash.csv",
         "sha256": "30a0f2f105b9d954bc343994fe6e7f8ff84a60a02ec82389d25c5634362c9085"
       },
       "retrieval": {
@@ -187,7 +187,7 @@
     {
       "canonical": {
         "bytes": 375012,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/jp_equity.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/jp_equity.csv",
         "sha256": "ad85bfbc10e337911bd3c47d5a162c24f1a1ceadca22d563a3ad75298a5db870"
       },
       "currency": "JPY",
@@ -210,7 +210,7 @@
       },
       "raw": {
         "bytes": 407403,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/jp_equity.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/jp_equity.csv",
         "sha256": "d263e8bf4d8002ee3fad7e5f319218daeafcc21fc5ae80331d627cf871d0eb27"
       },
       "retrieval": {
@@ -228,7 +228,7 @@
     {
       "canonical": {
         "bytes": 11015,
-        "path": "data/processed/calibrated-reconstruction-v11-20260828T025104Z/jp_cash.csv",
+        "path": "data/processed/calibrated-reconstruction-v11-20260828T033808Z/jp_cash.csv",
         "sha256": "c5a0c4db002e1fa835dfdf1bc03a4b4df2bf2b8fd52fd92fc13a8cf1f42c5c2e"
       },
       "currency": "JPY",
@@ -251,7 +251,7 @@
       },
       "raw": {
         "bytes": 11851,
-        "path": "data/raw/calibrated-reconstruction-v11-20260828T025104Z/jp_cash.csv",
+        "path": "data/raw/calibrated-reconstruction-v11-20260828T033808Z/jp_cash.csv",
         "sha256": "c9cc574451667f49a868b630f045db6667019d7f5f60f4f13307686f0ed03be0"
       },
       "retrieval": {

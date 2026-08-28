@@ -24,7 +24,7 @@ A large amount of the repository was built and checked with AI assistance. Sever
 
 The comparator is the sealed **calibrated-reconstruction-v11** fixed Jump
 Model, set up in `configs/baselines/research-calibrated-reconstruction-v11.toml`
-(run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`, 2026-08-28).
+(run `fixed-baselines-3448b85e0fec-97ee407c64ce-7130da99b50b`, 2026-08-28).
 
 *Sealed* means its settings and its fitted results are frozen and saved, so
 every new idea is measured against the same numbers instead of a freshly
@@ -39,9 +39,14 @@ total-return series v11 read set its dividend accruals from information after
 the day they applied to — from a value two years ahead across the 2020-2022
 bridge, and from each year's own full-year yield before 2011 — which breaks the
 no-future-data rule for decisions in 1990-2011 and 2020-2022. The corrected
-series uses the prior year's yield before 2011 and, across the bridge, the
-accrual realised before the hole — it avoids the current period's figure;
-when JST's prior-year value became public was not established. Everything
+series uses the prior year's dividend yield before 2011 and, across the
+bridge, the accrual realised before the hole — no accrual is set from a value
+dated after the day it applies to. JST's own documentation defines its
+yearly yield as that year's dividends over that year's price, sourced for
+Japan from the Bureau of Statistics' annual Tokyo Stock Exchange tables, so
+the year y−1 figure contains only year y−1 information (whether the price is
+year-end or the annual average is not stated; the figure covers the whole
+exchange, not the 225 Nikkei names — see the receipt). Everything
 else — grids, optimizer
 restarts, features, HMM, selection rule, metrics, US and German data — is
 byte-identical to v11. Rerun on the corrected input, the US and German outputs
