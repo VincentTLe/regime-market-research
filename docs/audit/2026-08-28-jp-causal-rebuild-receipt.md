@@ -42,7 +42,8 @@ change; nothing here is an independent check.
   after the hole is multiplied by 1.006144 so the level continues from the
   bridge — official returns unchanged.
 - `configs/baselines/research-calibrated-reconstruction-v11.toml`
-  (config_sha256 `c4b7d476e5a444ad8cb763dcdf67651ab1c3aadd80f0ead7bcbb846ad1f7578f`).
+  (config_sha256 `d8bdf14ff66073b2` …; the first execution used an earlier byte-identical
+  file except for `frozen_at_utc`, see below).
   `diff` against `research-calibrated-v11.toml`: `config_id`,
   `frozen_at_utc`, a 13-line header comment, and the Japanese equity
   `file_path` / `sha256` / `construction` / deviation text. Grids, n_init=60,
@@ -70,12 +71,22 @@ not changed.
 
 ## The rerun
 
-- Acquisition `calibrated-reconstruction-v11-20260828T015445Z`; the FRED DTB3
+- Acquisition `calibrated-reconstruction-v11-20260828T025104Z`; the FRED DTB3
   download and every non-Japanese raw/processed file are byte-identical to the
   sealed v11 acquisition (checked file by file).
-- Run `fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`, executed in
-  a git worktree at commit `67cf521`. Local-only under `artifacts/`; its
+- Run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`, executed in
+  a git worktree at commit `df2e0f7`. Local-only under `artifacts/`; its
   inputs are published as `data/snapshots/calibrated-reconstruction-v11/`.
+- **Executed twice.** The first execution
+  (`fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`, 01:54–02:35 UTC,
+  commit `67cf521`) ran under a config whose `frozen_at_utc` read a rounded
+  `00:00:00Z`, earlier than the registry row that actually froze the
+  measurement list (01:52:35Z). The owner rejected that; the field was set to
+  the registry timestamp, which changes the config hash and therefore the run
+  id, and the study was re-executed. Of the 125 inventory files, 123 are
+  hash-identical between the two executions; only `config.lock.toml` and
+  `data-manifest.json` differ. Every number below is from the second
+  execution and is identical in the first.
 
 ## What was measured (registry list a–g), old = v11-ninit60, new = this run
 
@@ -174,8 +185,8 @@ receipt.
 ## Technical details
 
 - Old run `fixed-baselines-5b12efa2948c-d57a9e7d9c07-b277dea3beb3` (sealed
-  2026-08-08). New run `fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`,
-  01:54:48 → 02:35:36 UTC 2026-08-28 (41 min), worktree at commit `67cf521`,
+  2026-08-08). New run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`,
+  02:51:09 → 03:32:02 UTC 2026-08-28 (41 min), worktree at commit `df2e0f7`,
   python 3.12, the repo `.venv` with the `data` extra installed
   (`uv sync --extra data --inexact`, requests 2.34.2 as in the sealed run).
 - `adaptive-jump verify --run …`: status complete, 125 inventory files, 27
