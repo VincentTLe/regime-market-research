@@ -1,6 +1,6 @@
 schema_version = 1
 config_id = "calibrated-reconstruction-v11"
-frozen_at_utc = "2026-08-28T00:00:00Z"
+frozen_at_utc = "2026-08-28T01:52:35Z"
 # CALIBRATED-RECONSTRUCTION-V11 (2026-08-28): identical to
 # research-calibrated-v11.toml (config_sha256 5b12efa2948c...) except the
 # Japanese equity source. The v11 Nikkei series set two dividend accruals
@@ -8,11 +8,13 @@ frozen_at_utc = "2026-08-28T00:00:00Z"
 # 2022-05 bridge from the value at the END of the hole; each pre-2011 year
 # from its own full-year yield), which AGENTS.md rule 1 forbids. This file
 # points [markets.jp].equity at jp_equity_tr_causal.csv, built from the
-# same pinned inputs with accruals that use only past information. Nothing
+# same pinned inputs with accruals that avoid the current period's figure
+# (prior-year JST yield; trailing realised accrual across the hole). Nothing
 # else changes: grids, n_init, features, HMM, selection, metrics, US and DE
 # data pins are byte-identical to v11. This is a rule-1 correction, not a
-# tuning step; it was frozen before its rerun was scored (registry
-# jp-causal-rebuild-001).
+# tuning step; frozen_at_utc above is the timestamp of the registry row
+# jp-causal-rebuild-001 that froze the measurement list and decision rule
+# before the rerun was scored.
 # CORRECTION (2026-08-08, before any downstream study completed): n_init
 # raised from 10 to 60 for [jm] only ([hmm].n_init stays 10, HMM is an
 # unaffected identity gate). The first v11 seal (frozen_at_utc

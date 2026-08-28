@@ -15,7 +15,10 @@ change; nothing here is an independent check.
   Decisions in 1990-2011 and 2020-2022 therefore read returns that depended on
   data up to one and two years later.
 - The fix builds a second series, `jp_equity_tr_causal.csv`, from the same
-  pinned inputs with accruals that use only past information, and reruns the
+  pinned inputs with accruals that avoid the current period's figure (the
+  prior year's JST yield before 2011; the accrual realised before the hole
+  across it — when JST's prior-year value became public was not
+  established), and reruns the
   fixed-JM baseline with **nothing else changed**. That rerun is the project's
   comparator from now on, by a rule written down before it was scored.
 - The two input series differ very little: at most 5.1e-5 per session in log
@@ -56,9 +59,11 @@ change; nothing here is an independent check.
 ## What did not change
 
 `jp_equity_tr.csv` (sha256 `e8717952…`) and `research-calibrated-v11.toml`
-are untouched, and the isolated rebuild reproduced all seven builder outputs
-byte-for-byte (5/5 v11 pins matched); whether each older sealed config's
-pins are among those seven was not re-checked here. The US and German reconstructions also spread in-period dividend
+are untouched. In an isolated worktree the builder could not start from an
+empty output folder (its German step reads `de_cash_ladder.csv` before
+`main()` writes it); with that one file copied in first, it reproduced all
+seven outputs byte-for-byte (5/5 v11 pins matched). Whether each older sealed
+config's pins are among those seven was not re-checked here. The US and German reconstructions also spread in-period dividend
 figures (monthly Shiller, annual JST) but end before 1988; every scored
 decision is 1990 or later, so they are recorded in `docs/data-provenance.md`,
 not changed.
@@ -180,8 +185,8 @@ receipt.
   → `artifacts/jp-causal-rebuild/summary.{csv,md}` (local-only; the numbers
   above are copied from it).
 - Isolated rebuild (`scripts/data/build_external_sources.py` in a worktree
-  with the pinned inputs copied in): all seven outputs byte-identical to the
-  live files; 5/5 v11 pins matched. The builder cannot run from an empty
+  with the pinned inputs and `de_cash_ladder.csv` copied in): all seven
+  outputs byte-identical to the live files; 5/5 v11 pins matched. The builder cannot run from an empty
   output folder because `build_de_total_return.validate` reads
   `de_cash_ladder.csv` before `main()` writes it — a pre-existing ordering
   defect, worked around by copying that file in first; not fixed here.
