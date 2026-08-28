@@ -291,7 +291,7 @@ def test_git_provenance_rejects_result_affecting_diff(tmp_path: Path) -> None:
         # config edited mid-run would be silently absent from the recorded
         # provenance.
         "configs/research-calibrated-v11.toml",
-        "configs/baselines/research-calibrated-v11.toml",
+        "configs/baselines/research-calibrated-reconstruction-v11.toml",
         "configs/baselines/legacy/research-calibrated-v11.toml",
     ],
 )

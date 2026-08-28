@@ -1,6 +1,6 @@
 # Current Research State
 
-Last updated: 2026-08-21
+Last updated: 2026-08-28
 
 ## Where the project stands
 
@@ -22,16 +22,49 @@ A large amount of the repository was built and checked with AI assistance. Sever
 
 ## What everything is compared against
 
-The comparator is the sealed **v11-ninit60** fixed Jump Model, set up in
-`configs/baselines/research-calibrated-v11.toml`.
+The comparator is the sealed **calibrated-reconstruction-v11** fixed Jump
+Model, set up in `configs/baselines/research-calibrated-reconstruction-v11.toml`
+(run `fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`, 2026-08-28).
 
 *Sealed* means its settings and its fitted results are frozen and saved, so
 every new idea is measured against the same numbers instead of a freshly
-refitted target.
+refitted target. It does not mean the comparator is correct: its lambda grids
+were searched against the paper's published tables and figure, so agreement
+with the paper is by construction, and its optimizer restarts are not known to
+reach the best fit (`docs/unspecified-choices.md` rows 2-3,
+`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`).
 
-`configs/baselines/legacy/` holds older versions (v10, v9.4, and earlier). They
-use different lambda grids and optimizer settings. They are history, not the
-current comparator, and auditing one of them answers a different question.
+It is the v11-ninit60 baseline with one input corrected. The Japanese
+total-return series v11 read set its dividend accruals from information after
+the day they applied to — from a value two years ahead across the 2020-2022
+bridge, and from each year's own full-year yield before 2011 — which breaks the
+no-future-data rule for decisions in 1990-2011 and 2020-2022. The corrected
+series uses only past information. Everything else — grids, optimizer
+restarts, features, HMM, selection rule, metrics, US and German data — is
+byte-identical to v11. Rerun on the corrected input, the US and German outputs
+did not change at all; in Japan the delay-1 fixed-JM Sharpe is 0.294 either
+way, but the monthly lambda choice changed in 92 of 409 months and the delay-10
+Sharpe fell by 0.024. That was reported as measured, with no threshold, and the
+new run became the comparator by a rule written before it was scored
+(`docs/audit/2026-08-28-jp-causal-rebuild-receipt.md`, registry
+`jp-causal-rebuild-001`). The exact bytes each sealed run read are published
+under `data/snapshots/`; the `redistribute_raw_data = false` line inside the
+sealed configs describes the policy when they were sealed, not current
+practice.
+
+**Frozen.** The owner's decision of 2026-08-27: this comparator is a calibrated
+reconstruction, not a replication, and it stops here. No change to the lambda
+grids, the feature standardizer, the refit months, the HMM grid or the number
+of optimizer restarts will be made to move its numbers toward the paper's.
+Each of those is a methodology change, and any future one needs its own frozen
+question first. Bugs — code that does something other than what the documents
+say, or data that uses information it could not have had — are still fixed.
+
+`configs/baselines/legacy/` holds older versions (v11-ninit60, v10, v9.4, and
+earlier). v11-ninit60 differs from the comparator only in the Japanese input;
+the older ones also use different lambda grids and optimizer settings. They are
+history, not the current comparator, and auditing one of them answers a
+different question.
 
 Known problem: the German leg is not clean. Its lambda grid fails the rule that
 was supposed to pick it, and some German fits did not fully converge. That is
@@ -39,7 +72,8 @@ part of why the first question below is still open.
 
 ## What is not settled
 
-- Whether the sealed v11-ninit60 baseline is the right scientific comparator.
+- Whether the sealed calibrated-reconstruction-v11 baseline is the right
+  scientific comparator (its grids are fitted to published output; see above).
 - Which old experiment results survive a fresh audit.
 - Whether the current code path contains additional mistakes.
 - What the final paper question should be.

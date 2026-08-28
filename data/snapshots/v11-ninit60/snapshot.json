@@ -2,7 +2,7 @@
   "snapshot_id": "v11-ninit60",
   "acquisition_run_id": "shu-replication-calibrated-v11-20260808T073312Z",
   "sealed_run_id": "fixed-baselines-5b12efa2948c-d57a9e7d9c07-b277dea3beb3",
-  "config_path": "configs/baselines/research-calibrated-v11.toml",
+  "config_path": "configs/baselines/legacy/research-calibrated-v11.toml",
   "config_sha256": "5b12efa2948c36bbfe4d1c2ba0c866297ead41f2552b7b31fb3c2f07f407b93f",
   "manifest_sha256": "d57a9e7d9c07e76c87ef094068246054ebaf9170665a69fa4bfa8cc4391e3a25",
   "live_paths": {

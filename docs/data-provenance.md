@@ -41,7 +41,11 @@ history is easy to find; free daily *total-return* history is not, and the paper
 is explicit that it uses total-return series. **All three markets** need a
 dividend reconstruction over part of the span. The US and German reconstructions
 sit entirely inside the training window and never touch the reported 1990-2023
-period. The Japanese one does: our official N225TR mirror begins only
+period. They also spread each month's (US, Shiller) or year's (Germany, JST)
+dividend figure across the sessions of that same month or year, which is not
+causal within the period — but every scored decision is dated 1990 or later,
+when all of those figures were already known, so no reported signal depends on
+information from after its own day. They are recorded here, not changed. The Japanese one does: our official N225TR mirror begins only
 2011-12-19, so 1990-2011 of the *reported* period rests on a reconstruction. Its
 accuracy is evidenced rather than assumed — chained back 32 years it reaches
 6,470.24 against Nikkei's own 1979-12-28 base of 6,569.47, a drift of 0.048
@@ -114,11 +118,38 @@ closes intraday (daily correlation 0.82-0.90) while monthly levels agree.
 
 ### Japan — Nikkei 225 total return
 
+Two files are built from the same three inputs. The comparator reads the
+causal one.
+
+**`data/external/jp_equity_tr_causal.csv`** (sha256 `d263e8bf…`, read by
+`configs/baselines/research-calibrated-reconstruction-v11.toml`):
+
+| segment | source | note |
+|---|---|---|
+| 2022-06-01 onward | official Nikkei 225 Total Return × 1.006144 | official returns unchanged; one constant carries the level on from the bridge |
+| 2020-07-10 .. 2022-05-31 | `^N225` price path + accrual realised over the 252 official sessions ending 2020-07-09 (0.02178 log/yr) | bridges the mirror hole using only data that existed on 2020-07-09 |
+| 2011-12-19 .. 2020-07-09 | official Nikkei 225 Total Return | used as published |
+| 1965 .. 2011-12-18 | `^N225` price path + the *prior* calendar year's JST dividend yield | reconstructed; level anchored at the first official value (a scale, not a return) |
+
+**`data/external/jp_equity_tr.csv`** (sha256 `e8717952…`, read by v11 and
+earlier; kept so those sealed runs rebuild byte-identically). **Not causal**:
+both of its reconstructed segments set a dividend accrual with a number from
+after the day it applies to. That breaks AGENTS.md rule 1 for scored decisions
+in 1990-2011 (by up to a year) and 2020-07..2022-05 (by up to two years). Found
+by an external review of PR #30 (2026-08-27); corrected in registry row
+`jp-causal-rebuild-001`.
+
 | segment | source | note |
 |---|---|---|
 | 2011-12-19 onward | official Nikkei 225 Total Return | used as published |
-| 2020-07-09 .. 2022-05-31 | `^N225` price path + calibrated accrual | bridges a hole in the mirror; endpoint error 2e-16 |
-| 1965 .. 2011-12-18 | `^N225` price path + JST annual dividend yields | reconstructed, anchored at the first official value |
+| 2020-07-09 .. 2022-05-31 | `^N225` price path + accrual calibrated to the 2022-05-31 official value, spread backward | endpoint error 2e-16 — because the endpoint was used |
+| 1965 .. 2011-12-18 | `^N225` price path + each year's own full-year JST dividend yield | reconstructed, anchored at the first official value |
+
+The two series differ by at most 5.1e-5 in any session's log return (Japan's
+daily return standard deviation over 1990-2023 is 0.0147); 5,861 of the 8,346
+scored sessions change, and the annualised drift over 1990-2023 moves by
+−0.028 pp/yr. How far that moves the fitted states and the strategy is
+measured in `docs/audit/2026-08-28-jp-causal-rebuild-receipt.md`.
 
 - Nikkei 225 TR — https://indexes.nikkei.co.jp/en/nkave/index/profile?idx=nk225tr
 - `^N225` — https://finance.yahoo.com/quote/%5EN225/history/ (14,508 sessions from 1965-01-05)
