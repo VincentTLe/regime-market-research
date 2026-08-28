@@ -2,10 +2,11 @@
 
 Every canonical series below is rebuilt deterministically by
 `scripts/data/build_external_sources.py` from sha256-pinned raw inputs in
-`data/external/inputs/`, and every output hash is pinned again in the sealed
-baseline contract — currently `configs/baselines/research-calibrated-v11.toml`.
-The five output hashes are unchanged since `research-expanding-v9-3.toml`, which
-is now legacy. The builder refuses to run if any input hash has moved.
+`data/external/inputs/`, and every output hash is pinned again in the comparator
+config — currently `configs/baselines/research-calibrated-reconstruction-v11.toml`.
+Four of the five pinned hashes are unchanged since `research-expanding-v9-3.toml`
+(now in `configs/baselines/legacy/`); the Japanese one changed on 2026-08-28,
+when its dividend accruals were rebuilt without future information. The builder refuses to run if any input hash has moved.
 
 ## What the paper uses, and why we cannot
 
@@ -55,10 +56,13 @@ scored signal depends on information from after its own day. They are recorded
 here, not changed. The Japanese reconstruction is different in kind, because it
 is scored directly: our official N225TR mirror begins only
 2011-12-19, so 1990-2011 of the *reported* period rests on a reconstruction. Its
-accuracy is evidenced rather than assumed — chained back 32 years it reaches
-6,470.24 against Nikkei's own 1979-12-28 base of 6,569.47, a drift of 0.048
-pp/yr, and the reconstructed 2001-2011 era tracks MSCI Japan as closely as the
-official era does (0.9710 against 0.9678).
+accuracy was measured rather than assumed — on the v11 construction, in the
+2026-07 audit: chained back 32 years it reached 6,470.24 against Nikkei's own
+1979-12-28 base of 6,569.47, a drift of 0.048 pp/yr, and the reconstructed
+2001-2011 era tracked MSCI Japan as closely as the official era does (0.9710
+against 0.9678). The causal series that replaced it on 2026-08-28 differs from
+that construction by at most 5.1e-5 per session in log return; these two checks
+were not repeated on it.
 
 ## Equity
 
@@ -76,14 +80,18 @@ official era does (0.9710 against 0.9678).
 Validated by rebuilding 1988-2023 with the reconstruction recipe and comparing
 against the official index it imitates, over their 9,070 shared sessions: daily
 log-return correlation **0.999603**, annualised volatility off by **0.0027 pp**,
-CAGR off by **0.0837 pp**. `scripts/data/build_sp500_tr.py` raises rather than
-returns if any of the three thresholds fails.
+CAGR off by **0.0837 pp** (measured on the pinned local inputs on 2026-07-28;
+the inputs are not published, so these three values cannot be re-derived from a
+fresh checkout). What a fresh checkout can read is the gate:
+`scripts/data/build_sp500_tr.py::validate` raises rather than returns if any of
+its three thresholds fails.
 
-**This series replaced the CRSP value-weighted total market on 2026-07-28.** The
-substitution was the traced cause of the US HMM deviation: on 1987-10-19 the
-S&P 500 fell 20.47% and CRSP fell 17.41%, so every 3000-day window containing
-that day fitted a high-volatility regime about 8 pp below the values Figure 2 of
-the paper publishes. See `docs/audit/2026-07-full-audit.md`.
+**This series replaced the CRSP value-weighted total market on 2026-07-28.**
+Substituting it removed the US HMM deviation: on 1987-10-19 the S&P 500 fell
+20.47% and CRSP fell 17.41%, and with CRSP every 3000-day window containing that
+day fitted a high-volatility regime about 8 pp below the values Figure 2 of the
+paper publishes. That is a before/after comparison of one substitution, not a
+proof that nothing else differed. See `docs/audit/2026-07-full-audit.md`.
 
 ### Germany — DAX performance index
 
@@ -107,22 +115,24 @@ exactly 1000.0 on 1987-12-30, the official base date and value, which is why the
 joint left no visible trace and why the omission survived so long.
 
 The omission was worth **3.24%/yr** across eighteen years of training data. Two
-independent signatures exposed it: the unrepaired series implies a German equity
+separate signatures exposed it: the unrepaired series implies a German equity
 premium of −3.96%/yr over the risk-free rate across 18 years, and the missing
-yield matches two independent sources (OECD 3.02%, JST 3.24%). Repaired on
+yield matches two separate sources (OECD 3.02%, JST 3.24%). Repaired on
 2026-07-28 by `scripts/data/build_de_total_return.py`, which writes nothing unless
 three gates pass (reconstructed dividend rate +3.24% against the official era's
 +3.02%; equity premium −0.60% against JST's +0.02%; daily volatility unmoved at
 0.0042 pp). The repair is invisible to every published number being reproduced —
 Table 4's German column lies entirely inside the untouched official segment —
-and lands as `research-expanding-v9-2.toml` onward.
+and entered the pins from v9.2 onward (that config is no longer kept; v9.3 is
+the oldest surviving legacy pin).
 
 Yahoo's `^GDAXI` starts 1987-12-30 and is therefore **not usable on its own** —
 it misses the entire training and validation history the procedure requires.
-Cross-checks: correlation 1.0000 against `^GDAXI` after 2000, and monthly
-correlation 0.979-0.985 against the independent OECD MEI share-price index
-before 1988. Known limitation: pre-Xetra fixings 1988-1999 differ from Yahoo
-closes intraday (daily correlation 0.82-0.90) while monthly levels agree.
+Cross-checks (measured in 2026-07 on the local inputs; only the 0.979 figure is
+recorded in a tracked receipt): correlation 1.0000 against `^GDAXI` after 2000,
+and monthly correlation 0.979-0.985 against the separate OECD MEI share-price
+index before 1988. Known limitation: pre-Xetra fixings 1988-1999 differ from
+Yahoo closes intraday (daily correlation 0.82-0.90) while monthly levels agree.
 
 ### Japan — Nikkei 225 total return
 
@@ -163,8 +173,10 @@ measured in `docs/audit/2026-08-28-jp-causal-rebuild-receipt.md`.
 - `^N225` — https://finance.yahoo.com/quote/%5EN225/history/ (14,508 sessions from 1965-01-05)
 - JST Macrohistory — https://www.macrohistory.net/database/
 
-Validated on the 2012-2023 overlap: daily return correlation **0.9977**, implied
-dividend yields within **0.3 pp** of the JST series.
+Validated on the 2012-2023 overlap — on the v11 construction, in 2026-07: daily
+return correlation **0.9977**, implied dividend yields within **0.3 pp** of the
+JST series. Not repeated on the causal series (which differs from v11 by at most
+5.1e-5 per session in log return).
 
 Known limitation, and the reason the contract requests a 1969-05-01 start rather
 than 1970-01-01: the Tokyo exchange traded Saturdays until January 1989 and our
@@ -249,12 +261,14 @@ is rate-limited hard enough that it cannot be treated as a dependable feed, and
 Stooq's CSV link now requires a real browser. That is why `stooq_dax_daily.csv`
 is recorded in the contract as manually downloaded on 2026-07-25.
 
-**None of this can break a run.** Fetched inputs are stored under
+**None of this can break the replay of a sealed run.** (A new acquisition still
+needs FRED to answer once.) Fetched inputs are stored under
 `data/external/inputs/` with pinned hashes, and the one series the pipeline
 still fetches live — `DTB3` — is captured into the run's acquisition manifest
 (`data/raw/<config>-<timestamp>/us_cash.csv`) and verified against it rather
-than re-downloaded. The v9 manifest already holds DTB3 for 1969-05-01..2023-12-29,
-14,262 rows.
+than re-downloaded. Every acquisition since v9.3 — including the two published
+under `data/snapshots/` — holds DTB3 for 1969-05-01..2023-12-29, 14,262 data
+rows, with the same sha256 (`62106f6d…`).
 
 If a series ever does need refreshing, download it once in a browser, drop it in
 `data/external/inputs/`, and update the `INPUT_SHA256` pin in
@@ -277,8 +291,9 @@ data/raw/shu-replication-expanding-v9-3-20260729T081133Z/us_cash.csv
 ```
 
 Identical, so the manual copy was deleted rather than kept as a second source of
-truth: it is already stored under `data/raw/<run>/us_cash.csv` with its hash
-recorded in that run's manifest.
+truth. The v9.3 raw folder named above is no longer on disk; the same bytes,
+with the same hash, are tracked at
+`data/snapshots/v11-ninit60/raw/shu-replication-calibrated-v11-20260808T073312Z/us_cash.csv`.
 
 One note for anyone repeating the comparison. DTB3 carries **605 blank rows**
 over 1969-2023 — US market holidays, the first three being 1969-05-30,

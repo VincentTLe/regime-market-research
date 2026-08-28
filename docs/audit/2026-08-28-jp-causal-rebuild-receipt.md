@@ -43,11 +43,12 @@ change; nothing here is an independent check.
   bridge — official returns unchanged.
 - `configs/baselines/research-calibrated-reconstruction-v11.toml`
   (config_sha256 `3448b85e0fecb8b4…`; see "Executed three times" below).
-  `diff` against `research-calibrated-v11.toml`: `config_id`,
-  `frozen_at_utc`, a 13-line header comment, and the Japanese equity
-  `file_path` / `sha256` / `construction` / deviation text. Grids, n_init=60,
-  features, HMM protocol, selection rule, metric definitions, US and DE data
-  pins: byte-identical.
+  `diff` against `research-calibrated-v11.toml` (12 lines removed, 31 added):
+  `config_id`, `frozen_at_utc`, a 14-line header comment, the Japanese
+  paragraph and builder-path line of `[data_policy].splice_documentation`, and
+  the Japanese equity `file_path` / `sha256` / `construction` / deviation text.
+  Grids, n_init=60, features, HMM protocol, selection rule, metric definitions,
+  US and DE data pins: byte-identical.
 - Four unit tests on synthetic data in `tests/test_series_splices.py`:
   perturbing the value at the end of the hole leaves every bridge return
   unchanged; the bridge accrual equals the trailing realised one; the session
@@ -62,7 +63,8 @@ change; nothing here is an independent check.
 are untouched. In an isolated worktree the builder could not start from an
 empty output folder (its German step reads `de_cash_ladder.csv` before
 `main()` writes it); with that one file copied in first, it reproduced all
-seven outputs byte-for-byte (5/5 v11 pins matched). Whether each older sealed
+seven outputs byte-for-byte on this machine, from the local pinned inputs, on
+2026-08-28 (5/5 v11 pins matched). Whether each older sealed
 config's pins are among those seven was not re-checked here. The US and German reconstructions also spread in-period dividend
 figures (monthly Shiller, annual JST) but end before 1988; every scored
 decision is 1990 or later, so they are recorded in `docs/data-provenance.md`,
@@ -92,6 +94,11 @@ not changed.
   the first two.
 
 ## What was measured (registry list a–g), old = v11-ninit60, new = this run
+
+The two run directories live only on the owner's machine (`artifacts/` is
+gitignored). Everything needed to regenerate them is tracked — the two configs,
+the inputs under `data/snapshots/`, and the comparison script — at about 41
+minutes per run.
 
 All counts are days on which both runs define a value; the Japanese
 regime path is defined on 10,448 (HMM) or 10,342 (JM) days from the first
@@ -144,15 +151,17 @@ markets.
 ### What we can say
 
 - On the primary delay (1), the Japanese fixed-JM Sharpe is unchanged to
-  three decimals (0.294) and the drawdown improves by 0.5 points; the
+  three decimals (0.294) and the drawdown improves by 0.47 points; the
   conclusion "fixed JM beats buy-and-hold and the HMM in Japan at delay 1"
   is the same on the corrected input.
 - The buy-and-hold row moves by −0.0012 of Sharpe: that is the size of the
   input change itself, with no model in between.
-- An input change of that size still changed which lambda the monthly rule
-  selected in 92 of 409 months at delay 1, and moved the delay-10 fixed-JM
-  Sharpe by −0.024 — a measured sensitivity of the selection rule and of
-  the delay-10 cell, on this market, this grid, this run pair.
+- An input change of that size, passed through the n_init=60 optimizer,
+  still changed which lambda the monthly rule selected in 92 of 409 months at
+  delay 1, and moved the delay-10 fixed-JM Sharpe by −0.024 — a measured
+  sensitivity of the selection rule and of the delay-10 cell, on this market,
+  this grid, this run pair. How much of that is the input and how much is the
+  optimizer landing elsewhere is not separated (next section).
 
 ### What we cannot say
 
@@ -183,21 +192,23 @@ markets.
   price were public facts on the first session of year y, so an accrual equal
   to their ratio uses no information generated after the day. Whether JST's
   figure is built only from year y−1 data was checked against the JST
-  documentation (2026-08-28, `JST_documentationR6.pdf` and the "Rate of Return
-  on Everything" data appendix, both downloaded from macrohistory.net):
+  documentation (2026-08-28: `JST_documentationR6.pdf` and
+  `JST_RORE_Documentation_R6.pdf`, both downloaded from
+  https://www.macrohistory.net/database/ — external documents, not in this
+  repository):
   the codebook defines `eq_dp[t] = dividend[t]/p[t]` and
   `eq_tr[t] = (p[t]+d[t])/p[t−1] − 1`; for Japan 1952–2015 the appendix's
   Table 27 sources capital gain and dividend return from the Bureau of
   Statistics Japan, tables 14-25-a/b (Tokyo Stock Exchange 1st and 2nd
   sections), plus Fujino and Akiyama (1977) stock-operation gains up to 1975.
-  So JST's value for year y−1 is an annual statistic of year y−1 prices and
-  dividends. Two limits remain: the codebook does not state whether `p[t]` is
+  So JST's value for year y−1 is an annual statistic of year y−1 data (prices
+  and dividends; through 1975 also the Fujino–Akiyama operations term). Two limits remain: the codebook does not state whether `p[t]` is
   the year-end or the annual-average price, and the underlying statistic
   covers the whole Tokyo exchange, not the 225 Nikkei constituents — a proxy
   this reconstruction has always used. The compiled yearbook figure for year
   y−1 would typically be printed during year y; the argument here rests on
   the underlying prices and dividends, not on the yearbook. Checked on the
-  Japan file: the codebook identity `eq_tr = eq_capgain + eq_dp·(1+eq_capgain)`
+  Japan file (`data/external/inputs/jst_japan_eq.csv`, gitignored — local-only): the codebook identity `eq_tr = eq_capgain + eq_dp·(1+eq_capgain)`
   holds to 3e-8 for 1976–2020 and fails only through 1975 (residual up to
   2.2 percentage points), exactly the years the appendix says carry the
   extra Fujino–Akiyama stock-operation term — so the file behaves as the

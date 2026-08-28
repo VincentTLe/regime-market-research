@@ -29,7 +29,8 @@ Several changes were tested, including simple challengers, adaptive switching pe
 
 Main lesson:
 
-> No tested change has yet produced a clear improvement that should be treated as a final result.
+> No tested change is treated as a final result. Each experiment's outcome
+> is recorded in the registry; several were retracted or corrected on audit.
 
 Some variants changed regime behavior in interesting ways, but better-looking regime paths did not automatically produce better investment results.
 
@@ -62,11 +63,12 @@ By August, the project contained more process and historical machinery than a hu
 
 ## 5. Current reset
 
-As of 2026-08-21, the project is deliberately paused before any new model work.
+As of 2026-08-28, the project is deliberately paused before any new model work.
 
 The plan is:
 
-1. independently understand and verify the core pipeline;
+1. understand and check the core pipeline, with the checking done by someone
+   who did not build it;
 2. inventory the important experiments already run;
 3. decide which results are still trustworthy;
 4. only then choose the paper question.

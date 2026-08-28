@@ -68,14 +68,17 @@ yearly yield as that year's dividends over that year's price, sourced for
 Japan from the Bureau of Statistics' annual Tokyo Stock Exchange tables, so
 the year y−1 figure contains only year y−1 information (whether the price is
 year-end or the annual average is not stated; the figure covers the whole
-exchange, not the 225 Nikkei names — see the receipt). Everything
-else — grids, optimizer
-restarts, features, HMM, selection rule, metrics, US and German data — is
-byte-identical to v11. Rerun on the corrected input, the US and German outputs
-did not change at all; in Japan the delay-1 fixed-JM Sharpe is 0.294 either
+exchange, not the 225 Nikkei names — see the receipt). The grids, optimizer restarts, features, HMM, selection rule, metric
+definitions and the US and German data pins are byte-identical to v11; the
+config also differs in its Japanese splice description and a header comment.
+Rerun on the corrected input, the US and German outputs did not change at all
+(40 of 40 output files per market, 0 of 54 metric cells); in Japan the delay-1 fixed-JM Sharpe is 0.294 either
 way, but the monthly lambda choice changed in 92 of 409 months and the delay-10
-Sharpe fell by 0.024. That was reported as measured, with no threshold, and the
-new run became the comparator by a rule written before it was scored
+Sharpe fell by 0.024. Those counts come from run directories kept only on the
+owner's machine; the inputs, configs and comparison script are tracked, so
+both runs can be regenerated (about 41 minutes each). They were reported as
+measured, with no threshold, and the new run became the comparator by a rule
+written before it was scored
 (`docs/audit/2026-08-28-jp-causal-rebuild-receipt.md`, registry
 `jp-causal-rebuild-001`). The exact bytes each sealed run read are published
 under `data/snapshots/`; the `redistribute_raw_data = false` line inside the
@@ -116,7 +119,8 @@ stopped at counting. Nothing has been resealed in response; this is an open
 owner decision, and it is part of why the first question below is still open.
 Evidence:
 `docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`,
-`artifacts/v12-stress-gate/`, `artifacts/optimizer-fidelity/report.txt`.
+`artifacts/v12-stress-gate/v11-ninit180-report.txt` (the 41 and the 11),
+`artifacts/optimizer-fidelity/report.txt` (the random-seed families).
 
 ## What is not settled
 
@@ -156,8 +160,8 @@ configs, which do quote the paper. Checking code also still lives inside the pac
 (`simple_jm_verifier.py`) and in four audit-labelled test modules.
 
 Still to do: `docs/theory/da-jm-formalization.md` describes work this file has
-parked, and `docs/audit/` is 22 historical receipts. Six of them supply 21 of
-the 43 quotations the claim checker verifies; the other 16 contribute none and
+parked, and `docs/audit/` is 23 historical receipts. Six of them supply 21 of
+the 43 quotations the claim checker verifies; the other 17 contribute none and
 are kept as history only.
 
 ## Current stop rule

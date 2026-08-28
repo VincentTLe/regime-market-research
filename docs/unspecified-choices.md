@@ -8,7 +8,12 @@ shifts every number).
 Every row here is a knob **we** had to set because the paper does not. Results
 are conditional on these settings. Read this file before proposing a change to
 any knob listed in it, and never search a row for the setting that best matches
-the paper's numbers — see CLAUDE.md, "Free parameters the paper never fixes".
+the paper's numbers — see AGENTS.md rule 5.
+
+Two reading notes. Rows are numbered in the order they were added, so row 6
+sits after row 10 in the file. Numbers quoted from runs before v10 (the v8.x
+and v9.x series) come from run directories that are no longer on disk; they are
+recorded values, not re-checkable ones.
 
 Status legend: **open** = still our choice, alternatives materially move the
 numbers · **bounded** = alternatives measured, spread known · **closed** = the
@@ -82,7 +87,9 @@ The v8.4 row is stale. The numbers above belong to the v8.4 run; the v10 run
 (`fixed-baselines-36ca1ace131c-…`) reads us 0.683, de 0.398, jp 0.291; the
 sealed baseline as of 2026-08-08 is v11-ninit60
 (`fixed-baselines-5b12efa2948c-…`), where the fixed JM reads us 0.677, de 0.389,
-jp 0.294. Quote the run, never the word "current".
+jp 0.294; the comparator since 2026-08-28, calibrated-reconstruction-v11
+(`fixed-baselines-3448b85e0fec-…`, corrected Japanese input, same grids), reads
+us 0.677, de 0.389, jp 0.294. Quote the run, never the word "current".
 
 **Axis status.** This row is no longer open. `jm-standardizer-geometry-002/-003`
 exhausted the author-artifact geometry family — no cadence reproduces the
@@ -168,7 +175,8 @@ PASS with turnover identical to six decimal places and the shift count unchanged
 at 144, though Sharpe did move slightly, 0.2228 to 0.2202
 (`docs/audit/2026-07-29-codex-review-verdicts.md`). Third, the stop that would
 report on it, `upper_boundary_month_fraction_limit`, is 1.0 in
-`configs/baselines/research-calibrated-v11.toml`, and no fraction can exceed
+`configs/baselines/research-calibrated-reconstruction-v11.toml` (as it was in
+v11), and no fraction can exceed
 1.0, so it reports and cannot fail. Widening was measured on the HMM side and
 moved the optimum rather than bracketing it; the same test has not been run for
 lambda.
@@ -202,7 +210,7 @@ construction error, not a property of the paper. The grid as a whole stays a
 free parameter; only the omission of 6 was a defect.
 
 The justification for adding 6 is that the paper names it. It is **not** that it
-improves agreement with Table 4 — see CLAUDE.md on never searching an
+improves agreement with Table 4 — see AGENTS.md rule 5 on never tuning an
 unspecified knob for the setting that best matches the target. The direction of
 the effect was measured after the decision, not before it.
 
@@ -249,8 +257,9 @@ row. This matches the effective-k inversion above (13.4 / 3.6 / 6.4).
 and no median filter; the GitHub repo's only example hard-codes λ = 50 on
 Nasdaq-100 data; arXiv v1 published a λ grid ({10, 22, 50, 100, 220, 500, 1000})
 for a *different* protocol and dataset and v3 withdrew it; the companion paper
-gives only endpoints (0-100, log-spaced). Externally verified 2026-07-29/30,
-three-vote adversarial check per claim.
+gives only endpoints (0-100, log-spaced). Checked 2026-07-29/30 by three
+separate AI-agent passes per claim — a second reading, not independent
+validation (AGENTS.md rule 8).
 
 *Where our excess concentrates.* Episode-level comparison against Shu's own
 Figure 6 path: 13 extra US bear episodes, 10 of them five sessions or shorter,
@@ -271,7 +280,7 @@ a different rule on different data.
 **This row is therefore recorded as UNIDENTIFIED, not as an open gap to be
 closed.** The paper publishes a selection procedure and no candidate set, and
 the turnover row is reachable from within our grid — so a set that reproduces
-141% certainly exists. Finding it by search is the move CLAUDE.md forbids. Any
+141% certainly exists. Finding it by search is the move AGENTS.md rule 5 forbids. Any
 future change here needs a justification that could have been written before the
 number was known, as adding k = 6 did.
 
@@ -372,7 +381,8 @@ delays when computing Table 4.
 
 **What we chose.** `comparison_sample =
 per_market_all_delays_intersection_of_complete_metric_rows`
-(`config.lock.toml:129`).
+(the `comparison_sample` key, present in every sealed config; line 234 of the
+comparator config).
 
 **Consequence, measured.** The Japanese buy-and-hold Sharpe is 0.193 under this
 frozen rule and 0.189 under a per-model sample. The audit ledger quoted 0.189,
@@ -390,7 +400,7 @@ assumption. One page later the paper gives the identity in words and numbers:
 
 > [line 781-783] "turnover of the JM-guided 0/1 strategy applied to the S&P 500 is as low as 44%, meaning that on average, the portfolio manager buys and sells 44% of total allocation (a combined 88% trading) each year"
 
-44% one way, 88% combined, denominator the entire allocation. `backtest.py:194`
+44% one way, 88% combined, denominator the entire allocation. `backtest.py:220-222`
 computes exactly this. The phrase "of total allocation" independently kills the
 leverage-scaled readings.
 
@@ -425,9 +435,9 @@ de 151 against 167 implied; jp 208 against 197 implied. The US bear share is
 > Shu's own published positions — and there the two published rows disagree about
 > the winner (MDD prefers the cost-free flat path at 0.0072 against 0.0116;
 > Calmar prefers the cost-retaining one at 0.0030 against 0.0055). The selection
-> in `scripts/probe_mdd_convention.py` is "whichever convention minimises error"
+> in the since-deleted `scripts/probe_mdd_convention.py` was "whichever convention minimises error"
 > against Table 4, which is exactly the search over an unspecified knob that
-> `CLAUDE.md` forbids.
+> `AGENTS.md` rule 5 forbids.
 >
 > A further objection to the adopted basis, independent of the fitting: it drops
 > the 10bp trading cost from the drawdown path while the Return row charges it,
@@ -571,8 +581,8 @@ Both parameterizations are near-MLE (zero or ~1e-6 pseudo-counts), so a priori
 they should reach the same local optima under our stricter convergence gate.
 
 **Not adopted, spread unmeasured.** These are example-code defaults from a
-different study, exactly the class of artifact CLAUDE.md forbids promoting into
-paper claims, and switching to them now — after knowing our turnover sits above
+different study, exactly the class of artifact that must not be promoted into
+claims about the paper (standing owner rule, see row 1's note), and switching to them now — after knowing our turnover sits above
 the target — would be searching a knob near the answer. The row exists so the
 axis is on the books: if a spread measurement is ever wanted, it needs its own
 frozen question first. Until then this row's honest status is: sensitivity

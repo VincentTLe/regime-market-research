@@ -8,7 +8,8 @@ This repository studies the Statistical Jump Model of Shu, Yu, and Mulvey for a 
 2. Tested several changes to the Jump Model.
 3. Found that many changes did not produce a clear, reliable improvement.
 4. Found real problems in the research pipeline and baseline choices, including data, grid-selection, optimizer, and testing issues.
-5. Stopped adding new models until the core pipeline is independently checked.
+5. Stopped adding new models until the core pipeline has been checked by
+   someone who did not build it.
 
 ## Current status
 
@@ -73,4 +74,4 @@ That material is kept for traceability. It is not the main reading path and shou
 
 ## Rule for new work
 
-Do not add a new model or experiment until the current pipeline has been independently audited and the owner can explain the result-producing path in plain language.
+Do not add a new model or experiment until the current pipeline has been checked by someone who did not build it and the owner can explain the result-producing path in plain language.
