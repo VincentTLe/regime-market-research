@@ -39,7 +39,10 @@ total-return series v11 read set its dividend accruals from information after
 the day they applied to — from a value two years ahead across the 2020-2022
 bridge, and from each year's own full-year yield before 2011 — which breaks the
 no-future-data rule for decisions in 1990-2011 and 2020-2022. The corrected
-series uses only past information. Everything else — grids, optimizer
+series uses the prior year's yield before 2011 and, across the bridge, the
+accrual realised before the hole — it avoids the current period's figure;
+when JST's prior-year value became public was not established. Everything
+else — grids, optimizer
 restarts, features, HMM, selection rule, metrics, US and German data — is
 byte-identical to v11. Rerun on the corrected input, the US and German outputs
 did not change at all; in Japan the delay-1 fixed-JM Sharpe is 0.294 either

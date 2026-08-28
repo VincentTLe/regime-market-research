@@ -195,7 +195,7 @@ JP_TRAILING_ACCRUAL_SESSIONS = 252
 def jp_causal_total_return(
     price: pd.Series, official: pd.Series, yields: pd.Series
 ) -> tuple[pd.Series, dict[str, float | str]]:
-    """Nikkei 225 total return built only from information available each day.
+    """Nikkei 225 total return whose accruals avoid the current period's figure.
 
     The original ``build_jp_total_return`` sets every dividend accrual with a
     number from later than the day it is applied to: the mirror-hole bridge
@@ -206,8 +206,10 @@ def jp_causal_total_return(
     which AGENTS.md rule 1 forbids. This construction replaces both rules:
 
     * before the first official value, a day in calendar year y accrues
-      JST ``eq_dp`` for year y-1 (known by the end of y-1), spread over 252
-      sessions;
+      JST ``eq_dp`` for year y-1 rather than for y itself, spread over 252
+      sessions. This avoids the current year's full-year figure; when JST's
+      value for y-1 actually became public was not established, so this is
+      "not the current year's number", not "known to a trader on the day";
     * across the mirror hole, every session accrues the dividend rate realised
       over the ``JP_TRAILING_ACCRUAL_SESSIONS`` official sessions ending at the
       last value before the hole -- the same instrument, measured on data that
