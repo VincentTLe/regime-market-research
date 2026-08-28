@@ -24,7 +24,7 @@ A large amount of the repository was built and checked with AI assistance. Sever
 
 The comparator is the sealed **calibrated-reconstruction-v11** fixed Jump
 Model, set up in `configs/baselines/research-calibrated-reconstruction-v11.toml`
-(run `fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219`, 2026-08-28).
+(run `fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e`, 2026-08-28).
 
 *Sealed* means its settings and its fitted results are frozen and saved, so
 every new idea is measured against the same numbers instead of a freshly

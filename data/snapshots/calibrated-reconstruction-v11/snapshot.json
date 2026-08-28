@@ -1,10 +1,10 @@
 {
   "snapshot_id": "calibrated-reconstruction-v11",
-  "acquisition_run_id": "calibrated-reconstruction-v11-20260828T015445Z",
-  "sealed_run_id": "fixed-baselines-c4b7d476e5a4-e6e7e8302ad3-67cf52166219",
+  "acquisition_run_id": "calibrated-reconstruction-v11-20260828T025104Z",
+  "sealed_run_id": "fixed-baselines-d8bdf14ff660-bce58b5c47fa-df2e0f723d7e",
   "config_path": "configs/baselines/research-calibrated-reconstruction-v11.toml",
-  "config_sha256": "c4b7d476e5a444ad8cb763dcdf67651ab1c3aadd80f0ead7bcbb846ad1f7578f",
-  "manifest_sha256": "e6e7e8302ad3ecbbfffde28e4206d59b1cfd34ba55628c6cef0549539a1e66d9",
+  "config_sha256": "d8bdf14ff66073b2d562e8eea5b6026b8abc8d40fb4f94c4512c8b83564dcca3",
+  "manifest_sha256": "bce58b5c47facaaddea61225bc0540e9eb871eee4050cfbfb921bbcff2c29d54",
   "live_paths": {
     "external": "data/external",
     "raw": "data/raw",
