@@ -18,6 +18,15 @@ jp_equity_tr.csv   Nikkei 225 total return: official N225TR from 2011-12-19
                    both official edges match exactly, and 1970-2011 back-
                    reconstructed from the ^N225 price path plus JST Macrohistory
                    annual dividend yields, anchored at the first official value.
+                   NOT CAUSAL: the bridge accrual is set from the official value
+                   at the end of the hole, and each pre-official year uses its
+                   own full-year yield. Kept only so sealed runs rebuild.
+jp_equity_tr_causal.csv
+                   Same inputs, causal accruals: pre-official day in year y
+                   accrues JST eq_dp for y-1; the hole is bridged forward with
+                   the accrual realised over the 252 official sessions before
+                   it; the official series after the hole is rescaled by one
+                   constant to continue from the bridge (returns unchanged).
 de_cash_ladder.csv Monthly percent per annum: OECD 3M interbank (<= 1975-06),
                    IMF IFS Germany Treasury-bill rate (1975-07..2007-08), ECB
                    euro-area 3M AAA spot yield sampled at month start
@@ -115,15 +124,8 @@ def build_jp_total_return() -> pd.DataFrame:
     """
     import numpy as np
 
-    price = pd.read_csv(INP / "n225_price_daily.csv", parse_dates=["date"])
-    price = price.dropna().set_index("date")["value"].sort_index()
-    official = pd.read_csv(INP / "n225tr_official_merged.csv", parse_dates=["date"])
-    official = official.dropna().set_index("date").iloc[:, 0].sort_index()
-    yields = pd.read_csv(INP / "jst_japan_eq.csv").set_index("year")["eq_dp"]
-
-    gaps = official.index.to_series().diff()
-    hole_end = gaps.idxmax()
-    hole_start = official.index[official.index.get_loc(hole_end) - 1]
+    price, official, yields = _jp_inputs()
+    hole_start, hole_end = _jp_mirror_hole(official)
     bridge_price = price.loc[hole_start:hole_end]
     accrual = float(
         np.log(official[hole_end] / official[hole_start])
@@ -169,6 +171,127 @@ def build_jp_total_return() -> pd.DataFrame:
     return pd.DataFrame({"date": full.index, "value": full.to_numpy()})
 
 
+def _jp_inputs() -> tuple[pd.Series, pd.Series, pd.Series]:
+    """The three pinned Nikkei inputs: ^N225 price, official N225TR, JST yields."""
+    price = pd.read_csv(INP / "n225_price_daily.csv", parse_dates=["date"])
+    price = price.dropna().set_index("date")["value"].sort_index()
+    official = pd.read_csv(INP / "n225tr_official_merged.csv", parse_dates=["date"])
+    official = official.dropna().set_index("date").iloc[:, 0].sort_index()
+    yields = pd.read_csv(INP / "jst_japan_eq.csv").set_index("year")["eq_dp"]
+    return price, official, yields
+
+
+def _jp_mirror_hole(official: pd.Series) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """Last official value before the largest calendar gap, and the first after."""
+    gaps = official.index.to_series().diff()
+    hole_end = gaps.idxmax()
+    hole_start = official.index[official.index.get_loc(hole_end) - 1]
+    return hole_start, hole_end
+
+
+JP_TRAILING_ACCRUAL_SESSIONS = 252
+
+
+def jp_causal_total_return(
+    price: pd.Series, official: pd.Series, yields: pd.Series
+) -> tuple[pd.Series, dict[str, float | str]]:
+    """Nikkei 225 total return built only from information available each day.
+
+    The original ``build_jp_total_return`` sets every dividend accrual with a
+    number from later than the day it is applied to: the mirror-hole bridge
+    is calibrated on the official value at the END of the hole, and the
+    pre-official years use each calendar year's FULL-YEAR JST dividend yield
+    on days inside that year. A decision on day t therefore read returns that
+    depended on data up to ~2 years (bridge) or ~1 year (yields) after t,
+    which AGENTS.md rule 1 forbids. This construction replaces both rules:
+
+    * before the first official value, a day in calendar year y accrues
+      JST ``eq_dp`` for year y-1 (known by the end of y-1), spread over 252
+      sessions;
+    * across the mirror hole, every session accrues the dividend rate realised
+      over the ``JP_TRAILING_ACCRUAL_SESSIONS`` official sessions ending at the
+      last value before the hole -- the same instrument, measured on data that
+      existed on that day -- applied forward along the ^N225 price path;
+    * after the hole, the official series is rescaled by one constant so that
+      it continues from the bridge's last value. Official returns are
+      unchanged; only the level carries the constant.
+
+    The pre-official segment is still anchored at the first official LEVEL.
+    That fixes a scale, not a return, so no daily return depends on it.
+
+    Returns the series and the construction constants for the record.
+    """
+    import numpy as np
+
+    hole_start, hole_end = _jp_mirror_hole(official)
+
+    # 1. Pre-official years: prior-year yield. Missing y-1 must fail loudly.
+    first_official = official.index[0]
+    pre_price = price.loc[:first_official]
+    daily_yield = pd.Series(
+        [float(yields.loc[y - 1]) / 252.0 for y in pre_price.index.year],
+        index=pre_price.index,
+    )
+    log_accrual = daily_yield.cumsum()
+    log_accrual -= log_accrual.iloc[-1]
+    pre = (
+        official[first_official]
+        * (pre_price / pre_price.iloc[-1])
+        * np.exp(log_accrual)
+    )
+
+    # 2. Bridge: trailing realised accrual measured before the hole.
+    window = official.loc[:hole_start].iloc[-(JP_TRAILING_ACCRUAL_SESSIONS + 1) :]
+    if len(window) != JP_TRAILING_ACCRUAL_SESSIONS + 1:
+        raise SystemExit("jp causal bridge: too few official sessions before the hole")
+    window_price = price.reindex(window.index)
+    if window_price.isna().any():
+        raise SystemExit("jp causal bridge: price path missing inside trailing window")
+    trailing = float(
+        np.log(window.iloc[-1] / window.iloc[0])
+        - np.log(window_price.iloc[-1] / window_price.iloc[0])
+    )
+    per_session = trailing / JP_TRAILING_ACCRUAL_SESSIONS
+    bridge_price = price.loc[hole_start:hole_end]
+    steps = np.arange(len(bridge_price))
+    bridge = (
+        official[hole_start]
+        * (bridge_price / bridge_price.iloc[0])
+        * np.exp(per_session * steps)
+    )
+
+    # 3. After the hole: official returns, level chained onto the bridge.
+    joint_factor = float(bridge.iloc[-1] / official[hole_end])
+    post = official.loc[hole_end:] * joint_factor
+
+    full = pd.concat(
+        [pre.iloc[:-1], official.loc[:hole_start], bridge.iloc[1:-1], post]
+    ).sort_index()
+    if full.index.duplicated().any():
+        raise SystemExit("jp causal TR construction produced duplicate dates")
+    returns = np.log(full / full.shift(1)).dropna()
+    if not np.isfinite(returns).all() or (returns.abs() > 0.30).any():
+        raise SystemExit("jp causal TR construction produced implausible returns")
+    notes: dict[str, float | str] = {
+        "first_official": str(first_official.date()),
+        "hole_start": str(hole_start.date()),
+        "hole_end": str(hole_end.date()),
+        "bridge_sessions": int(len(bridge_price)),
+        "trailing_accrual_log_per_year": trailing,
+        "post_hole_level_factor": joint_factor,
+    }
+    return full, notes
+
+
+def build_jp_total_return_causal() -> pd.DataFrame:
+    """The causal Nikkei series from the pinned inputs; prints its constants."""
+    price, official, yields = _jp_inputs()
+    full, notes = jp_causal_total_return(price, official, yields)
+    for key, value in notes.items():
+        print(f"jp_equity_tr_causal.csv {key}={value}")
+    return pd.DataFrame({"date": full.index, "value": full.to_numpy()})
+
+
 def main() -> None:
     verify_inputs()
     # US equity: French daily factors -> total-return index level
@@ -210,8 +333,14 @@ def main() -> None:
     dax.columns = ["date", "value"]
     write("de_equity_tr.csv", dax)
 
-    # JP equity: official N225TR where available, reconstructed elsewhere
+    # JP equity: official N225TR where available, reconstructed elsewhere.
+    # Kept so the sealed v11 inputs still rebuild byte-identically; its
+    # dividend accruals are NOT causal (see jp_causal_total_return).
     write("jp_equity_tr.csv", build_jp_total_return())
+
+    # JP equity, causal construction: every accrual uses only information
+    # available on the day it is applied to. Read by calibrated-reconstruction-v11.
+    write("jp_equity_tr_causal.csv", build_jp_total_return_causal())
 
     # DE cash ladder (monthly, percent per annum)
     ib = fred("IR3TIB01DEM156N")
