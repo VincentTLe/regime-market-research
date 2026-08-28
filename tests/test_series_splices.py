@@ -181,3 +181,87 @@ def test_external_builder_rejects_input_hash_before_downstream_io(
 
     downstream_read.assert_not_called()
     downstream_write.assert_not_called()
+
+
+# --- Japan: the causal construction must not read anything after the day ----
+
+
+def _jp_synthetic() -> tuple[
+    pd.Series, pd.Series, pd.Series, pd.Timestamp, pd.Timestamp
+]:
+    """A price path, an official TR series with a hole, and annual yields.
+
+    The official series is price times a smooth 2%/year accrual, so the true
+    trailing accrual is known. The hole removes 2002-03-04 .. 2002-08-30.
+    """
+    import numpy as np
+
+    dates = pd.bdate_range("2000-01-03", "2003-12-31")
+    rng = np.random.default_rng(0)
+    price = pd.Series(
+        100.0 * np.exp(np.cumsum(rng.normal(0.0, 0.01, len(dates)))), index=dates
+    )
+    first_official = pd.Timestamp("2001-01-02")
+    official_dates = dates[dates >= first_official]
+    accrual = 0.02 / 252.0 * np.arange(len(official_dates))
+    official = 1.5 * price.loc[official_dates] * np.exp(accrual)
+    hole_start, hole_end = pd.Timestamp("2002-03-01"), pd.Timestamp("2002-09-02")
+    official = official[(official.index <= hole_start) | (official.index >= hole_end)]
+    yields = pd.Series(
+        {1999: 0.010, 2000: 0.020, 2001: 0.030, 2002: 0.040, 2003: 0.050},
+        name="eq_dp",
+    )
+    return price, official, yields, hole_start, hole_end
+
+
+def _log_returns(series: pd.Series) -> pd.Series:
+    import numpy as np
+
+    return np.log(series / series.shift(1)).dropna()
+
+
+def test_jp_causal_bridge_ignores_the_value_at_the_end_of_the_hole() -> None:
+    price, official, yields, hole_start, hole_end = _jp_synthetic()
+    base, notes = EXTERNAL_BUILDER.jp_causal_total_return(price, official, yields)
+
+    shocked = official.copy()
+    shocked.loc[shocked.index >= hole_end] *= 1.10
+    moved, _ = EXTERNAL_BUILDER.jp_causal_total_return(price, shocked, yields)
+
+    inside = (base.index > hole_start) & (base.index <= hole_end)
+    pd.testing.assert_series_equal(
+        _log_returns(base)[inside[1:]], _log_returns(moved)[inside[1:]]
+    )
+    # The old construction would have absorbed the +10% into the bridge; the
+    # causal one reports it only in the post-hole level constant.
+    assert notes["post_hole_level_factor"] == pytest.approx(1.0, abs=0.05)
+
+
+def test_jp_causal_bridge_uses_the_trailing_realised_accrual() -> None:
+    price, official, yields, hole_start, hole_end = _jp_synthetic()
+    series, notes = EXTERNAL_BUILDER.jp_causal_total_return(price, official, yields)
+    assert notes["trailing_accrual_log_per_year"] == pytest.approx(0.02, abs=1e-9)
+
+    inside = (series.index > hole_start) & (series.index <= hole_end)
+    excess = _log_returns(series)[inside[1:]] - _log_returns(price)[inside[1:]]
+    assert excess.to_numpy() == pytest.approx(0.02 / 252.0, abs=1e-12)
+
+
+def test_jp_causal_joint_carries_the_official_return_after_the_hole() -> None:
+    price, official, yields, _, hole_end = _jp_synthetic()
+    series, _ = EXTERNAL_BUILDER.jp_causal_total_return(price, official, yields)
+    after = official.index[official.index.get_loc(hole_end) + 1]
+    got = float(series[after] / series[hole_end])
+    expected = float(official[after] / official[hole_end])
+    assert got == pytest.approx(expected, rel=1e-12)
+
+
+def test_jp_causal_pre_official_years_use_the_prior_years_yield() -> None:
+    price, official, yields, _, _ = _jp_synthetic()
+    series, _ = EXTERNAL_BUILDER.jp_causal_total_return(price, official, yields)
+    excess = _log_returns(series) - _log_returns(price).reindex(
+        _log_returns(series).index
+    )
+    year_2000 = excess[(excess.index.year == 2000)]
+    assert year_2000.to_numpy() == pytest.approx(yields[1999] / 252.0, abs=1e-12)
+    assert series[official.index[0]] == pytest.approx(official.iloc[0])
