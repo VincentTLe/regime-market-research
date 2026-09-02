@@ -1,44 +1,79 @@
-# Python runtime artifacts
+# What this repository publishes, and what it keeps local
+#
+# Tracked: code, configs, documentation, and small derived evidence produced by
+# our own code.
+# Not tracked: raw market data, downloaded third-party source material, and
+# heavy regenerable run outputs.
+#
+# `docs/evidence-policy.md` states the rule and classifies every candidate.
+# This file is only its mechanical form.
+#
+# Order matters here. A later line overrides an earlier one, and git never
+# descends into a directory it has excluded, so every carve-out below first
+# re-includes a directory and only then re-excludes the heavy files inside it.
+
+# --- Python, packaging, local environment ----------------------------------
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
-
-# Local environments
+.ipynb_checkpoints/
 .venv/
 venv/
 .env
 monitor.env
-
-# Packaging artifacts
 *.egg-info/
 build/
 dist/
+.claude/worktrees/
 
-# Third-party paywalled PDFs the owner downloaded via institutional SSRN
-# access into paper/ for reading -- unlike arXiv preprints, SSRN's terms do
-# not grant redistribution, so these stay local-only. paper/*.pdf that IS
-# this project's own manuscript output (now under archive/paper/) is
-# unaffected -- this lists exact filenames, not a blanket paper/*.pdf rule.
-paper/s10479-026-07041-z.pdf
-paper/ssrn-4556048.pdf
-paper/ssrn-5235747.pdf
-paper/ssrn-5817083.pdf
-paper/ssrn-6933278.pdf
-
-# Rendered figure pages. The archived copies of the two HTML deliverables live
-# in archive/docs/. Only the atlas carries a successful verifier certification;
-# the capguard verifier still fails its frozen spec-hash gate, so that page is
-# an archived copy of an unverified diagnosis. These paths are where the
-# archived renderers in archive/scripts/rendering/ rewrite them.
-docs/atlas/
-docs/capguard-diagnosis/
-
-# Market data and generated outputs
+# --- Research data: local only ---------------------------------------------
+# The sealed baseline contract sets redistribute_raw_data = false and
+# local_research_only = true, so no vendor price or yield series is published
+# here. The tracked route to rebuilding them is scripts/data/ plus the
+# INPUT_SHA256 pins inside it; see data/README.md for what that route does and
+# does not give a fresh clone.
 data/*.tar.zst
 data/raw/*
 data/processed/*
+data/external/*
+# Cold storage for retired minute-era data (paid vendor).
+data/legacy-cold/
+# Exceptions: primary-source paper text/PDFs that are (a) load-bearing for
+# [line NNN] citations elsewhere in the repo (check_paper_claims.py) and/or
+# (b) freely redistributable arXiv preprints -- these must survive a lost
+# local disk, unlike the bulk re-fetchable market-data CSVs this rule exists
+# for. Paywalled/uncertain-license items (SSRN PDFs, the Princeton
+# dissertation, slide decks) stay local-only.
+!data/external/inputs/
+data/external/inputs/*
+!data/external/inputs/2402.05272v3.pdf
+!data/external/inputs/shu_paper.txt
+!data/external/inputs/shu-yu-mulvey-2406.09578.pdf
+!data/external/inputs/shu-yu-mulvey-2406.09578.txt
+!data/external/inputs/shu-mulvey-2410.14841.pdf
+!data/external/inputs/shu-mulvey-2410.14841.txt
+
+# --- Generated run outputs: local by default -------------------------------
 artifacts/*
+
+# Committed evidence. Small derived tables that a durable claim in README.md,
+# CURRENT.md, docs/ or the manuscript depends on. Nothing heavy goes here and
+# nothing here is read by the pipeline, so this directory needs no re-exclusion
+# and new evidence belongs in it rather than as another carve-out below.
+!artifacts/evidence/
+# ...but never the heavy, regenerable kinds, even if someone copies them in.
+artifacts/evidence/**/*.npz
+artifacts/evidence/**/*.npy
+artifacts/evidence/**/*.pkl
+artifacts/evidence/**/*states*.csv
+artifacts/evidence/**/features*.csv
+artifacts/evidence/**/trades*.csv
+artifacts/evidence/**/candidate-returns*.csv
+
+# Per-study carve-outs, kept in the order they were added. Each one tracks a
+# study's small tables and re-excludes its regenerable state matrices and
+# numerical caches.
 !artifacts/jm-residual/
 artifacts/jm-residual/*/*-states.csv
 artifacts/jm-residual/*/*/*-states.csv
@@ -71,6 +106,27 @@ artifacts/optimizer-fidelity/fit-cache/
 artifacts/hmm-residual/**/*states*.csv
 artifacts/hmm-residual/**/*.npz
 artifacts/hmm-residual/**/*.npy
+
+# --- Third-party material we may not redistribute --------------------------
+# Paywalled PDFs the owner downloaded via institutional SSRN access into
+# paper/ for reading -- unlike arXiv preprints, SSRN's terms do not grant
+# redistribution, so these stay local-only. paper/*.pdf that IS this project's
+# own manuscript output (now under archive/paper/) is unaffected -- this lists
+# exact filenames, not a blanket paper/*.pdf rule.
+paper/s10479-026-07041-z.pdf
+paper/ssrn-4556048.pdf
+paper/ssrn-5235747.pdf
+paper/ssrn-5817083.pdf
+paper/ssrn-6933278.pdf
+
+# --- Rendered pages, logs, databases, model weights ------------------------
+# Rendered figure pages. The archived copies of the two HTML deliverables live
+# in archive/docs/. Only the atlas carries a successful verifier certification;
+# the capguard verifier still fails its frozen spec-hash gate, so that page is
+# an archived copy of an unverified diagnosis. These paths are where the
+# archived renderers in archive/scripts/rendering/ rewrite them.
+docs/atlas/
+docs/capguard-diagnosis/
 reports/
 *.log
 *.pid
@@ -79,27 +135,3 @@ reports/
 *.pt
 *.pth
 *.safetensors
-
-# Local notebooks checkpoints
-.ipynb_checkpoints/
-
-# Cold storage for retired minute-era data
-data/legacy-cold/
-data/external/*
-# Exceptions: primary-source paper text/PDFs that are (a) load-bearing for
-# [line NNN] citations elsewhere in the repo (check_paper_claims.py) and/or
-# (b) freely redistributable arXiv preprints -- these must survive a lost
-# local disk, unlike the bulk re-fetchable market-data CSVs this rule exists
-# for. Paywalled/uncertain-license items (SSRN PDFs, the Princeton
-# dissertation, slide decks) stay local-only.
-!data/external/inputs/
-data/external/inputs/*
-!data/external/inputs/2402.05272v3.pdf
-!data/external/inputs/shu_paper.txt
-!data/external/inputs/shu-yu-mulvey-2406.09578.pdf
-!data/external/inputs/shu-yu-mulvey-2406.09578.txt
-!data/external/inputs/shu-mulvey-2410.14841.pdf
-!data/external/inputs/shu-mulvey-2410.14841.txt
-
-# Agent worktrees
-.claude/worktrees/

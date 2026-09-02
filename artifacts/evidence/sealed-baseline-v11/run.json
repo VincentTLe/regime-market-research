@@ -1,0 +1,23 @@
+{
+  "claim_label": "calibrated baseline",
+  "conclusion": "directional gate passed on the calibrated baseline",
+  "config_sha256": "5b12efa2948c36bbfe4d1c2ba0c866297ead41f2552b7b31fb3c2f07f407b93f",
+  "created_at_utc": "2026-08-08T07:33:25.958698+00:00",
+  "data_manifest_sha256": "d57a9e7d9c07e76c87ef094068246054ebaf9170665a69fa4bfa8cc4391e3a25",
+  "finished_at_utc": "2026-08-08T08:13:39.561422+00:00",
+  "git_sha": "b277dea3beb337c7023807f2be5524153a5baa5a",
+  "metrics_opened": true,
+  "packages": {
+    "adaptive-jump-model": "0.1.0",
+    "hmmlearn": "0.3.3",
+    "jumpmodels": "0.1.1",
+    "matplotlib": "3.11.0",
+    "numpy": "2.4.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.18.0"
+  },
+  "run_id": "fixed-baselines-5b12efa2948c-d57a9e7d9c07-b277dea3beb3",
+  "schema_version": 1,
+  "status": "complete"
+}
