@@ -1,12 +1,15 @@
 # How to read the receipts in this folder
 
 These files are historical records. Per `AGENTS.md`, they are not rewritten to
-look current; this note is the only thing added on 2026-08-28. Read a receipt
+look current; this note is the only thing added on 2026-08-28, apart from one clearly
+labelled plain-English companion to the 2026-08-28 receipt
+(`2026-08-28-jp-causal-rebuild-receipt.plain-english.md`); no receipt's own
+text was changed. Read a receipt
 only to check the specific old claim it covers, and read it with these four
 facts in hand.
 
 **1. "Independent" in a receipt means a different AI agent, not independent
-validation.** Nine receipts call themselves "independent verification
+validation.** Six receipts call themselves "independent verification
 receipts", and many say "independent auditor" or "adversarial verification".
 In every case the checker was another AI session (a separate Claude or Codex
 agent that had not written the code). `AGENTS.md` rules 8 and 11 now say that
@@ -54,4 +57,7 @@ quotations from six of these files (`2026-07-full-audit.md`,
 `2026-07-31-jm-effective-lambda-inversion.md`); `CURRENT.md` cites the
 ninit60 grid receipt and the 2026-08-28 receipt; `docs/unspecified-choices.md`
 and `docs/data-provenance.md` cite the full audit, the two deep-research
-notes and the Codex verdicts. The other receipts are history only.
+notes and the Codex verdicts. `CURRENT.md` also relies on `2026-07-31-jm-exhaustive-search.md`,
+`2026-07-31-jm-per-market-grids.md` and
+`2026-08-07-grid-selection-rule-001-receipt.md` as the record of how the
+comparator's lambda grids were chosen. The other receipts are history only.

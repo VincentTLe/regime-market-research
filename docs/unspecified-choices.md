@@ -34,8 +34,9 @@ model; most rows below measure how far a choice moves us from it.
 have been frozen and recorded so they cannot change silently; the *comparator*
 is the sealed run that new results are compared against. The *registry* is the
 project's written record of experiments and the decisions taken on them.
-*Out-of-sample* is the reported period, on which each day's signal comes only
-from models fitted to earlier data.
+*Out-of-sample* is the reported period, on which each day's signal uses only
+information available on or before that day: the model is fitted to a window
+that ends on the signal date and never sees a later observation.
 
 Two reading notes. Rows are numbered in the order they were added, so row 6
 sits after row 10 in the file. Numbers quoted from runs before v10 (the v8.x
@@ -951,7 +952,10 @@ that 252/365/360/day-count never appear in the body).
 
 **What we chose.** `annual_percent / 100 / 252`, simple and uncompounded,
 accruing on trading days only (`features.py:81-83`). That is, the annual rate is
-divided evenly over 252 trading days and no interest is earned on interest.
+divided evenly over 252 trading days. What is uncompounded is the *conversion*
+only: the daily rate is `r/252`, not `(1+r)^(1/252) - 1`. Wealth in the backtest
+still compounds day by day, because each day's cash return enters
+`strategy_return` and wealth is `cumprod(1 + strategy_return)`.
 
 **Bounds, measured.** Compounded daily conversion would credit cash ~13 bp/yr
 (basis points per year; 100 bp = 1%) less at the sample-mean 4.47% yield.
