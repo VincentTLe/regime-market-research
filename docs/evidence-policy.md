@@ -5,6 +5,16 @@ republish. That tension is the whole problem this file resolves. It states one
 rule, sorts every candidate file into one of four buckets, and records honestly
 what a fresh clone still cannot check.
 
+**Update, 2026-09-01.** Two facts postdate this file and change what it
+classifies. (1) The owner decided to publish all model inputs: the exact bytes
+each sealed run read are tracked under `data/snapshots/` (PR #30 and #31), so
+the "keep local" rows for `data/external/*.csv`, `data/raw/` and
+`data/processed/` below describe the policy as it stood on 2026-08-24, not
+current practice. (2) The Linux machine that held the 17 vendor input files,
+every run directory and about 2.9 GB of run output was lost; the rebuild route
+under B cannot currently be executed by anyone, and the "local, regenerable"
+class under C is, for now, neither. The rule itself is unchanged.
+
 ## The rule
 
 > If an important number appears in `README.md`, `CURRENT.md`, `docs/`, or the
@@ -145,7 +155,9 @@ rewrite an existing evidence file and any hash recorded against it. And the
 carve-out comment naming trades as committed evidence was a deliberate earlier
 decision, not an accident of pattern matching. The options are: leave it and
 record the exception, drop the two market columns from the six files, or drop
-the ledgers and keep the study's small tables. **Status: UNRESOLVED.**
+the ledgers and keep the study's small tables. **Status: moot since 2026-09-01.** The owner decided to publish all model
+inputs, and the same US series is tracked under `data/snapshots/`; the six
+files stay as they are.
 
 ## What a fresh clone still cannot check
 

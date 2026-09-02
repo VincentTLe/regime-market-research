@@ -17,9 +17,10 @@ states the rule these follow from.
 **These are stand-ins, not a second source of truth.** Each file is a
 byte-for-byte copy of a file inside a local run directory. Nothing was
 recomputed, re-rounded, or re-fitted to produce them, and no pipeline code
-reads this directory. The sha256 below is the check: on a machine that still
-has the run, the copy and the original must be identical, so a regenerated run
-cannot leave a stale copy passing silently here.
+reads this directory. The sha256 below identifies each copy. On a machine that still has the run,
+the copy and the original can be compared byte for byte; nothing runs that
+comparison automatically, so a regenerated run does not update this copy and a
+stale copy is detected only when someone compares.
 
 ---
 
@@ -35,7 +36,10 @@ Kind: **derived** — model output and summary statistics computed by
 canonical input to anything. Audit evidence only.
 
 Source run: `artifacts/fixed-baselines/fixed-baselines-5b12efa2948c-d57a9e7d9c07-b277dea3beb3/`
-(local-only, 73 MB). Produced by that run on 2026-08-08 from config sha256
+(local-only, 73 MB). **2026-09-01:** the machine that held that run is gone, so
+these five files are now the only surviving record of the sealed v11-ninit60
+results, and the byte-for-byte comparison described above can no longer be run
+by anyone. Produced by that run on 2026-08-08 from config sha256
 `5b12efa2948c…`, which is the sha256 of the tracked
 `configs/baselines/research-calibrated-v11.toml` — the same bytes, so no copy of
 the config is kept here.
@@ -71,7 +75,11 @@ it cannot fail.
 `metrics.csv` is what the sealed comparator scored, not evidence that the
 comparator is the right one. `CURRENT.md` records the open problem: rerun at the
 60 optimizer restarts this baseline actually uses, the rule that chose its
-lambda grids picks none of the three adopted grids.
+lambda grids ranks a different grid first in every market, and the German
+adopted grid drops out of the eligible set altogether; the US and Japanese
+adopted grids stay eligible and close to the top
+(`docs/audit/2026-08-08-grid-selection-rule-001-ninit60-receipt.md`). The
+German leg is the defect `CURRENT.md` names.
 
 None of these five files lets a fresh clone *recompute* anything. The six input
 series they were computed from are not in this repository and cannot be

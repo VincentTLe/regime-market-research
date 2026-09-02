@@ -62,6 +62,14 @@ artifacts/*
 # nothing here is read by the pipeline, so this directory needs no re-exclusion
 # and new evidence belongs in it rather than as another carve-out below.
 !artifacts/evidence/
+# ...but never the heavy, regenerable kinds, even if someone copies them in.
+artifacts/evidence/**/*.npz
+artifacts/evidence/**/*.npy
+artifacts/evidence/**/*.pkl
+artifacts/evidence/**/*states*.csv
+artifacts/evidence/**/features*.csv
+artifacts/evidence/**/trades*.csv
+artifacts/evidence/**/candidate-returns*.csv
 
 # Per-study carve-outs, kept in the order they were added. Each one tracks a
 # study's small tables and re-excludes its regenerable state matrices and

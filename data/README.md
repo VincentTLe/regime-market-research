@@ -1,5 +1,12 @@
 # data/
 
+**Update, 2026-09-01.** The owner decided to publish all model inputs. The
+exact bytes each sealed run read are tracked under `data/snapshots/`
+(`v11-ninit60` and `calibrated-reconstruction-v11`); the live paths below stay
+ignored and can be restored from a snapshot. The 17 vendor input files and every
+run directory were lost with the Linux machine, so the rebuild route described
+below cannot currently be executed by anyone.
+
 **None of the market data in this directory is published.** `.gitignore` keeps
 all of it local, on purpose, and a fresh clone gets an almost empty `data/`.
 This file says what is here, why it stays here, and what a fresh clone can do
