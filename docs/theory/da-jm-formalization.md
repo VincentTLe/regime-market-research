@@ -4,16 +4,22 @@ Status: **math only, no code, no frozen experiment spec yet.**
 
 ## Revision history
 
+- 2026-08-28: the canonical baseline this document anchors to (v11-ninit60)
+  was superseded by calibrated-reconstruction-v11 — same grids and settings,
+  Japanese input rebuilt without future information. Every reference below to
+  v11-ninit60 and its German defect still applies to the new comparator, which
+  inherits both. Nothing else in this document was updated; it stays parked.
+
 - **v1 (2026-08-08).** Original formalization: total-cost parameterization
   `phi_k(d) = -log q_k(d)` replacing the constant lambda, with a
-  `pi = sigmoid(lambda)` back-out. Independently verified as internally
+  `pi = sigmoid(lambda)` back-out. Checked by a second AI-agent pass (not independent validation) as internally
   correct mathematics (receipt
   `docs/audit/2026-08-08-da-jm-formalization-receipt.md`).
 - **v2 (2026-08-09, this version).** The sigmoid back-out is **retracted**
   (internally correct but numerically dead at this repo's lambda scales —
   see Section 7's warning box) and the model is reparameterized as an
   **excess (LLR-vs-geometric) duration cost added on top of the untouched
-  classic-lambda machinery**, per the adversarially verified fact-finding
+  classic-lambda machinery**, per the fact-finding (checked by a second AI-agent pass)
   (registry `da-jm-open-questions-factfinding-2026-08-09`) and the owner
   decisions of 2026-08-09 (D_max=504 with hazard-level geometric tail;
   left-censored first in-window segment; restricted-mean anchors computed
@@ -124,7 +130,7 @@ Delta_phi_k(d) = log[ q_{G,pi*_k}(d) / q_{W,beta,pi_beta,k}(d) ]
 ```
 
 with the censoring and cap conventions of Sections 4-6. Immediate
-consequences (all adversarially verified in the fact-finding NOTE):
+consequences (all checked by a second AI-agent pass in the fact-finding NOTE):
 
 - **beta = 1 gives an objective identity, not just path equivalence.**
   At beta=1 the Weibull family IS the geometric family and the anchor

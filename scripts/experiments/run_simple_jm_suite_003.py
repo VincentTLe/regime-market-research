@@ -25,7 +25,7 @@ from adaptive_jump.infrastructure import artifacts as _artifacts  # noqa: E402
 
 
 def main() -> int:
-    config = load_config(ROOT / "configs/baselines/research-calibrated-v11.toml")
+    config = load_config(ROOT / "configs/baselines/legacy/research-calibrated-v11.toml")
     spec = load_simple_jm_spec(
         ROOT / "research" / "contracts" / "simple-jm-suite-003.toml", config
     )

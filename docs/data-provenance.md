@@ -1,31 +1,71 @@
 # Data provenance
 
-Every canonical series below is rebuilt deterministically by
-`scripts/data/build_external_sources.py` from sha256-pinned raw inputs in
-`data/external/inputs/`, and every output hash is pinned again in the frozen
-research contract (`research-expanding-v9-3.toml`). The builder refuses to run
-if any input hash has moved.
+This page records where each canonical data series below (the project's
+official copy of each series) comes from, how it was built, and what was
+checked about it. "Provenance" simply means the origin and history of the data.
+
+**The short version.** The paper uses paid data. Every series we use is a free
+substitute. The stored series are rebuilt from fixed, fingerprinted input files;
+the US bill rate is fetched live and checked against a stored copy. A *sha256
+hash* is that fingerprint: a short code computed from a file's exact bytes,
+which changes if even one byte changes. "Pinned" means the expected hash is
+written down and checked. Each input file and each output file is
+fingerprinted, so a change to the bytes shows up whenever the pin is checked:
+the builder refuses to run if an input hash has moved, and the output hashes
+are written into the comparator config.
+
+Every canonical series below is rebuilt deterministically (same inputs give the
+same output every time) by `scripts/data/build_external_sources.py` from
+sha256-pinned raw inputs in `data/external/inputs/`. Every output hash is
+pinned again in the comparator config — the configuration file of the baseline
+run that new results are compared against — currently
+`configs/baselines/research-calibrated-reconstruction-v11.toml`. Four of the
+five pinned output hashes (five, not six, because the US cash series is fetched
+live rather than built — see "Risk-free rates") are unchanged since
+`research-expanding-v9-3.toml` (now in `configs/baselines/legacy/`). The
+Japanese one changed on 2026-08-28, when its dividend accruals were rebuilt
+without future information (the Japan section below explains what that means).
+The builder refuses to run if any input hash has moved.
 
 ## What the paper uses, and why we cannot
 
+The paper describes its data as follows:
+
 > [line 150-157] "The data analyzed in this article comprises the daily total return series of three major equity indices: S&P 500, DAX, and Nikkei 225, representing the US, Germany, and Japan, respectively. These data are sourced from the Bloomberg Terminal5 . For the risk-free rates, we use the 3-month Treasury Bill Yield from each corresponding country, sourced from the Global Financial Data (GFD) database. All data spans from the start of 1970 to the end of 2023."
 
-Both sources are subscription products. Every series here is a free
-reconstruction of one of them, and each is classified in the contract as
-`documented_proxy_candidate` rather than a match.
+Two terms matter for the rest of this page. A *total-return series* (or
+total-return index) tracks the value of an investment in the index with every
+dividend reinvested, so it counts both price moves and dividend payments. A
+*price index* tracks price moves only and leaves dividends out. The paper uses
+total-return series.
+
+Both of the paper's sources, the Bloomberg Terminal and Global Financial Data,
+are subscription products. Every series here is a free reconstruction of one of
+them, and each is classified in the contract — the frozen file that records
+exactly which inputs a run uses — as `documented_proxy_candidate` rather than a
+match. In plain words: a stand-in whose construction is written down, not the
+same data.
 
 ## How early the data has to start
 
-The paper says 1970, but 1970 is not a free choice — it is what the procedure
-forces. Section 3.4.2 fits on a 3000-trading-day window and Section 3.4.3 adds
-an 8-year validation window before the first out-of-sample day, so the series
-must begin roughly twenty years before the reported period starts:
+The paper says its data begins in 1970. That is not a free choice; it is what the
+procedure forces. Section 3.4.2 fits the model on a window of 3000 trading days
+(the training window), and Section 3.4.3 adds an 8-year validation window — a
+further stretch of data used to choose the model's settings, not to fit it —
+before the first out-of-sample day (the first day on which the model is
+actually scored). So the series must begin roughly twenty years before the
+reported period starts. The paper says so directly:
 
 > [line 713-715] "Since our data begin in 1970, with training windows spanning 12 years and validation windows 8 years, the out-of-sample testing period begins in 1990."
 
-A series that starts late therefore does not shorten the sample at the front —
-it deletes the beginning of the reported 1990-2023 period. Required anchor is
-about **1970-02**; all six of our series clear it by four to sixteen years.
+The consequence: a series that starts late does not shorten the sample at the
+front. It deletes the beginning of the reported 1990-2023 period instead. The
+required anchor — the latest date a series may start and still support the
+whole reported period — is about **1970-02**. All six of our series clear it by
+four to sixteen years.
+
+The table shows the first date in each of our six series, and how many years
+earlier that is than the paper's 1970 start and than the required anchor.
 
 | series | starts | vs the paper's 1970 | vs the required anchor |
 |---|---|---|---|
@@ -36,21 +76,70 @@ about **1970-02**; all six of our series clear it by four to sixteen years.
 | jp equity (N225 TR) | 1965-01-05 | +5.0 yr | +5.1 yr |
 | jp cash (ladder) | 1965-01-01 | +5.0 yr | +5.1 yr |
 
-The binding constraint is **not history length. It is total return.** Free daily
+The real limit is **not history length. It is total return.** Free daily
 history is easy to find; free daily *total-return* history is not, and the paper
-is explicit that it uses total-return series. **All three markets** need a
-dividend reconstruction over part of the span. The US and German reconstructions
-sit entirely inside the training window and never touch the reported 1990-2023
-period. The Japanese one does: our official N225TR mirror begins only
-2011-12-19, so 1990-2011 of the *reported* period rests on a reconstruction. Its
-accuracy is evidenced rather than assumed — chained back 32 years it reaches
-6,470.24 against Nikkei's own 1979-12-28 base of 6,569.47, a drift of 0.048
-pp/yr, and the reconstructed 2001-2011 era tracks MSCI Japan as closely as the
-official era does (0.9710 against 0.9678).
+is explicit that it uses total-return series.
+
+This is where *reconstruction* comes in. To reconstruct a total-return series,
+you take a price index and add the dividends back in, from either a dividend
+amount (US, Shiller) or a *dividend yield* (Germany and Japan, JST): the
+dividends paid over a period divided by the price, usually stated as a
+percentage per year. **All three markets** need a dividend reconstruction over
+part of the span.
+
+For the US and Germany, the reconstructed part sits entirely inside the training
+window, so no *US or German* reconstructed return is scored in the reported
+1990-2023 period. They still reach that period indirectly, and this should not
+be read as isolation:
+
+- They sit inside the 3000-day windows that fit the early-1990s models.
+- They also enter the monthly lambda selection directly. For decisions in the
+  early 1990s the eight-year validation window reaches back into 1982-1989, and
+  `select_monthly_candidate` scores every candidate strategy on the returns of
+  those years, so the reconstructed returns can change which lambda is selected
+  and therefore which state is deployed.
+- The expanding standardizer — the step that rescales each feature by the mean
+  and standard deviation of every past observation, and never drops an old one —
+  keeps them in its mean and standard deviation permanently. So they help set
+  the scale of every feature (every input quantity the model is given) that is
+  scored.
+- They spread each month's (US, Shiller) or year's (Germany, JST) dividend
+  figure across the sessions of that same month or year. Within that month or
+  year this is not causal ("causal" here means each day's value uses only
+  information that existed on or before that day): a day's dividend accrual —
+  the small slice of dividend added to that day's price move — uses a month or
+  year total that was only known at the end of the period. But every scored
+  decision is dated 1990 or later, after all of those dividends and prices had
+  occurred, so no scored signal depends on information from after its own day.
+  These reconstructions are recorded here, not changed.
+
+The Japanese reconstruction is different in kind, because it is scored directly.
+Our official N225TR mirror (our stored copy of the official Nikkei 225 Total
+Return index) begins only 2011-12-19, so 1990-2011 of the *reported* period
+rests on a reconstruction. Its accuracy was measured rather than assumed. On the
+v11 construction, in the 2026-07 audit:
+
+- Walked back 32 years from the first official value (working backward one day
+  at a time from the reconstructed returns), the reconstruction reached a level
+  of 6,470.24 on 1979-12-28, against Nikkei's own published base value of
+  6,569.47 for that date. That is a drift of 0.048 pp/yr: the gap in level,
+  spread over the years of chaining, in percentage points per year.
+- The reconstructed 2001-2011 era tracked MSCI Japan (a separate, broad index of
+  Japanese stocks) as closely as the official era does: daily correlation
+  0.9710 for the reconstructed era against 0.9678 for the official era, as
+  recorded in `docs/audit/2026-07-full-audit.md`.
+
+The causal series that replaced that construction on 2026-08-28 differs from it
+by at most 5.1e-5 (0.000051) per session (trading day) in log return. A *log
+return* is the natural logarithm of today's value divided by yesterday's; for
+small daily moves it is almost the same as the percentage change. These two
+checks were not repeated on the causal series.
 
 ## Equity
 
 ### United States — S&P 500 total return
+
+The table shows the two pieces the US series is made of.
 
 | segment | source | note |
 |---|---|---|
@@ -61,19 +150,42 @@ official era does (0.9710 against 0.9678).
 - `^GSPC` — https://finance.yahoo.com/quote/%5EGSPC/history/ (14,598 sessions from 1966)
 - Shiller dividends — https://raw.githubusercontent.com/datasets/s-and-p-500/main/data/data.csv
 
-Validated by rebuilding 1988-2023 with the reconstruction recipe and comparing
-against the official index it imitates, over their 9,070 shared sessions: daily
-log-return correlation **0.999603**, annualised volatility off by **0.0027 pp**,
-CAGR off by **0.0837 pp**. `scripts/data/build_sp500_tr.py` raises rather than
-returns if any of the three thresholds fails.
+"Chained onto" here means the reconstructed segment's level is scaled so that it
+meets the official index at the join date (a scale, not a return), as the Japan
+section also notes.
 
-**This series replaced the CRSP value-weighted total market on 2026-07-28.** The
-substitution was the traced cause of the US HMM deviation: on 1987-10-19 the
-S&P 500 fell 20.47% and CRSP fell 17.41%, so every 3000-day window containing
-that day fitted a high-volatility regime about 8 pp below the values Figure 2 of
-the paper publishes. See `docs/audit/2026-07-full-audit.md`.
+**What was checked.** The reconstruction recipe was used to rebuild 1988-2023,
+and the result was compared against the official index it imitates, over their
+9,070 shared sessions. Daily log-return correlation was **0.999603** (a value of
+1 would mean the two move in perfect lockstep day to day, up to scale).
+Annualised volatility (the size of a typical yearly swing) was off by
+**0.0027 pp**, where pp means percentage points. CAGR — the compound annual
+growth rate, the steady yearly rate that would produce the same total growth —
+was off by **0.0837 pp**.
+
+**What this does not establish.** These three values were measured on the pinned
+local inputs on 2026-07-28. The inputs are not published, so the three values
+cannot be re-derived from a fresh checkout; they are local-only. What a fresh
+checkout can read is the gate — a pass/fail check built into the script:
+`scripts/data/build_sp500_tr.py::validate` raises an error rather than
+returning if any of its three thresholds fails.
+
+**This series replaced the CRSP value-weighted total market on 2026-07-28.**
+Substituting it removed the US HMM deviation — the gap between the values our
+HMM (hidden Markov model, one of the models the paper reports) fitted for the
+US and the values the paper's Figure 2 publishes. On 1987-10-19 the S&P 500 fell
+20.47% and CRSP (a broad index of all US stocks, weighted by company size) fell
+17.41%. With CRSP, every 3000-day window containing that day fitted a
+high-volatility regime — the model's label for turbulent periods — whose fitted
+volatility sat about 8 pp below the value Figure 2 of the paper publishes. That
+is a before/after comparison of one substitution, not a proof that nothing else
+differed. See `docs/audit/2026-07-full-audit.md`.
 
 ### Germany — DAX performance index
+
+"Performance index" is the DAX's own term for its total-return version, as
+opposed to the *Kursindex*, its price-only version. The table shows the two
+pieces the German series is made of.
 
 | segment | source | note |
 |---|---|---|
@@ -88,68 +200,132 @@ the paper publishes. See `docs/audit/2026-07-full-audit.md`.
 > index, so dividends are already inside it and no reconstruction is needed".
 > That was wrong and the repair predates this correction by more than a week.
 
-The DAX is a performance index from its **1987-12-30 base date onward**, but the
-vendor spliced the DAX *Kursindex* backcast — a price index — onto it before
-that, so the pre-1988 segment carried **no dividends at all**. Both legs are
-exactly 1000.0 on 1987-12-30, the official base date and value, which is why the
-joint left no visible trace and why the omission survived so long.
+**What was wrong.** The DAX is a performance index from its **1987-12-30 base
+date onward**. Before that date, the vendor spliced on a *backcast* of the DAX
+Kursindex. A backcast is a series computed backward, after the fact, for dates
+before the index officially existed; a *splice* is the join where one series is
+attached to the end of another. Because the Kursindex is a price index, the
+pre-1988 segment carried **no dividends at all**. Both pieces are exactly 1000.0
+on 1987-12-30, the official base date and value, which is why the join left no
+visible trace and why the omission survived so long.
 
-The omission was worth **3.24%/yr** across eighteen years of training data. Two
-independent signatures exposed it: the unrepaired series implies a German equity
-premium of −3.96%/yr over the risk-free rate across 18 years, and the missing
-yield matches two independent sources (OECD 3.02%, JST 3.24%). Repaired on
-2026-07-28 by `scripts/data/build_de_total_return.py`, which writes nothing unless
-three gates pass (reconstructed dividend rate +3.24% against the official era's
+**How much it mattered.** The omission was worth **3.24%/yr** across eighteen
+years of training data. Two separate signs exposed it. First, the
+unrepaired series implies a German equity premium of −3.96%/yr over the
+risk-free rate across 18 years; the equity premium is the stock return minus the
+risk-free rate. Second, the missing yield matches two separate sources (OECD
+3.02%, JST 3.24%).
+
+**The repair.** Made on 2026-07-28 by `scripts/data/build_de_total_return.py`,
+which writes nothing unless three gates (pass/fail checks built into the
+script) pass: reconstructed dividend rate +3.24% against the official era's
 +3.02%; equity premium −0.60% against JST's +0.02%; daily volatility unmoved at
-0.0042 pp). The repair is invisible to every published number being reproduced —
+0.0042 pp. The repair is invisible to every published number being reproduced —
 Table 4's German column lies entirely inside the untouched official segment —
-and lands as `research-expanding-v9-2.toml` onward.
+and it entered the pins from v9.2 onward (that config is no longer kept; v9.3 is
+the oldest surviving legacy pin).
 
-Yahoo's `^GDAXI` starts 1987-12-30 and is therefore **not usable on its own** —
-it misses the entire training and validation history the procedure requires.
-Cross-checks: correlation 1.0000 against `^GDAXI` after 2000, and monthly
-correlation 0.979-0.985 against the independent OECD MEI share-price index
-before 1988. Known limitation: pre-Xetra fixings 1988-1999 differ from Yahoo
-closes intraday (daily correlation 0.82-0.90) while monthly levels agree.
+**Why not Yahoo.** Yahoo's `^GDAXI` starts 1987-12-30 and is therefore **not
+usable on its own** — it misses the entire training and validation history the
+procedure requires.
+
+**Cross-checks** (measured in 2026-07 on the local inputs; only the 0.979 figure
+is recorded in a receipt — an audit note — committed to Git): correlation
+1.0000 against `^GDAXI` after 2000, and monthly correlation 0.979-0.985 against
+the separate OECD MEI share-price index before 1988. Known limitation: the
+1988-1999 values are pre-Xetra fixings, which differ from Yahoo closes intraday
+(daily correlation 0.82-0.90) while monthly levels agree.
 
 ### Japan — Nikkei 225 total return
+
+Two files are built from the same three inputs. The comparator reads the
+causal one. *Causal*, as above, means every day's value uses only information
+that existed on or before that day (AGENTS.md rule 1).
+
+**`data/external/jp_equity_tr_causal.csv`** (sha256 `d263e8bf…`, read by
+`configs/baselines/research-calibrated-reconstruction-v11.toml`):
+
+The table shows its four pieces. "Accrual" means the small daily amount of
+dividend added to the price path to turn it into a total return.
+
+| segment | source | note |
+|---|---|---|
+| 2022-06-01 onward | official Nikkei 225 Total Return × 1.006144 | official returns unchanged; one constant carries the level on from the bridge |
+| 2020-07-10 .. 2022-05-31 | `^N225` price path + accrual realised over the 252 official sessions ending 2020-07-09 (0.02178 per year in log-return terms, about 2.2%/yr) | bridges the gap in our stored official copy (the "mirror hole", explained below) using only data that existed on 2020-07-09 |
+| 2011-12-19 .. 2020-07-09 | official Nikkei 225 Total Return | used as published |
+| 1965 .. 2011-12-18 | `^N225` price path + the *prior* calendar year's JST dividend yield | reconstructed; level anchored at the first official value (this fixes the overall level only and changes no daily return). JST's codebook defines the yield as that year's dividends divided by that year's price (`eq_dp[t] = dividend[t]/p[t]`), sourced for Japan 1952–2015 from Bureau of Statistics Japan tables 14-25-a/b (whole Tokyo exchange, not the Nikkei 225); whether the price is year-end or annual-average is not stated; see the 2026-08-28 receipt (the audit note recording this rebuild) |
+
+The "mirror hole" is the largest calendar gap in our stored copy of the
+official series, which is how `scripts/data/build_external_sources.py` defines
+it: the last official value before the gap is dated 2020-07-09 and the first
+official value after it is dated 2022-05-31, so the missing official sessions
+lie strictly between those two dates. The second row bridges them.
+
+**`data/external/jp_equity_tr.csv`** (sha256 `e8717952…`, read by v11 and
+earlier; kept so those sealed runs — runs whose inputs and outputs were frozen
+and fingerprinted — can be rebuilt with exactly the same bytes). **Not causal**:
+both of its reconstructed segments set a dividend accrual with a number from
+after the day it applies to. That breaks AGENTS.md rule 1 for scored decisions
+in 1990-2011 (by up to a year) and 2020-07..2022-05 (by up to two years). Found
+by an external review of PR #30 (2026-08-27); corrected in registry row
+`jp-causal-rebuild-001`.
+
+The table shows the three pieces of the older, non-causal file.
 
 | segment | source | note |
 |---|---|---|
 | 2011-12-19 onward | official Nikkei 225 Total Return | used as published |
-| 2020-07-09 .. 2022-05-31 | `^N225` price path + calibrated accrual | bridges a hole in the mirror; endpoint error 2e-16 |
-| 1965 .. 2011-12-18 | `^N225` price path + JST annual dividend yields | reconstructed, anchored at the first official value |
+| 2020-07-09 .. 2022-05-31 | `^N225` price path + accrual calibrated to the 2022-05-31 official value, spread backward | matches the official value on 2022-05-31 to 2e-16 (effectively exactly), which is not evidence of accuracy, because that endpoint was used to set the accrual |
+| 1965 .. 2011-12-18 | `^N225` price path + each year's own full-year JST dividend yield | reconstructed, anchored at the first official value |
+
+**How different the two files are.** The two series differ by at most 5.1e-5 in
+any session's log return. For scale, Japan's daily return standard deviation
+over 1990-2023 is 0.0147. Of the 8,346 scored sessions, 5,861 change, and the
+annualised drift (the average log return per year) over 1990-2023 moves by
+−0.028 pp/yr. How far that moves the model's fitted regimes (which days it
+labels as which state) and the strategy is measured in
+`docs/audit/2026-08-28-jp-causal-rebuild-receipt.md`.
 
 - Nikkei 225 TR — https://indexes.nikkei.co.jp/en/nkave/index/profile?idx=nk225tr
 - `^N225` — https://finance.yahoo.com/quote/%5EN225/history/ (14,508 sessions from 1965-01-05)
 - JST Macrohistory — https://www.macrohistory.net/database/
 
-Validated on the 2012-2023 overlap: daily return correlation **0.9977**, implied
-dividend yields within **0.3 pp** of the JST series.
+**What was checked.** On the 2012-2023 overlap — on the v11 construction, in
+2026-07: daily return correlation **0.9977** (the comparison series is NOT
+SPECIFIED: the audit note recording this figure,
+`docs/audit/2026-07-full-audit.md`, does not name it), and implied dividend
+yields within **0.3 pp** of the JST series. **Not repeated** on the causal
+series (which differs from v11 by at most 5.1e-5 per session in log return).
 
-Known limitation, and the reason the contract requests a 1969-05-01 start rather
-than 1970-01-01: the Tokyo exchange traded Saturdays until January 1989 and our
-`^N225` series contains no Saturday sessions, so a 3000-session window spans
-about eighteen months more calendar time than the paper's. Starting literally at
-1970-01-01 pushes the first out-of-sample day to 1990-09-17 in Japan and throws
-away the first nine months of the reported period.
+**Known limitation**, and the reason the contract requests a 1969-05-01 start
+rather than 1970-01-01: the Tokyo exchange traded Saturdays until January 1989
+and our `^N225` series contains no Saturday sessions. So a 3000-session window
+spans about eighteen months more calendar time than the paper's. Starting
+literally at 1970-01-01 pushes the first out-of-sample day to 1990-09-17 in
+Japan and throws away the first nine months of the reported period.
 
 ## Risk-free rates
 
-The paper uses each country's 3-month Treasury bill yield from Global Financial
-Data. Only the US has a free daily equivalent covering the whole span; Germany
-and Japan need documented ladders, and those ladders are the largest remaining
-data-side approximation in the study.
+The risk-free rate is the return on a very safe short-term government loan;
+here, the paper uses each country's 3-month Treasury bill yield from Global
+Financial Data. Only the US has a free daily equivalent covering the whole span.
+Germany and Japan need documented *ladders*: chains of series from different
+sources, joined end to end at splice dates so that together they cover the whole
+span. Those ladders are the largest remaining data-side approximation in the
+study.
 
 ### United States — direct, no substitution
 
 - `DTB3`, 3-month Treasury bill secondary market rate, discount basis —
   https://fred.stlouisfed.org/series/DTB3 — daily, from 1954-01-04.
 
-Fetched live rather than stored, with a 1-day availability lag and a 10-day
-staleness limit enforced by the pipeline.
+This series is fetched live rather than stored. The pipeline enforces a 1-day
+availability lag and a 10-day staleness limit (what each check does when it
+fails is not stated here; see the pipeline code).
 
 ### Germany — three segments, monthly
+
+The table shows the three series joined to make the German ladder.
 
 | span | series | source |
 |---|---|---|
@@ -158,64 +334,86 @@ staleness limit enforced by the pipeline.
 | 2007-09 .. | ECB euro-area AAA 3-month spot yield | https://data.ecb.europa.eu/data/datasets/YC |
 
 The IMF German bill series simply ends in 2007-08, which forces the third
-segment. Splice quality measured on the 2004-2007 overlap: **-0.09 pp +- 0.18**.
-The first segment is an interbank rate rather than a bill rate and carries a
-credit spread, but it only touches the 1970-75 warm-up, never the reported
-period.
+segment. Splice quality was measured on the 2004-2007 overlap, where both series
+exist: **-0.09 pp +- 0.18** (the original note does not name the statistic
+behind the +-). The first segment is an interbank rate (the rate banks lend to
+each other) rather than a bill rate, so it carries a credit spread — a little
+extra yield to compensate for the risk that a bank does not pay back — but it
+only touches the 1970-75 warm-up (the years used to fit the model before any
+day is scored), never the reported period.
 
 ### Japan — two segments, monthly
+
+The table shows the two series joined to make the Japanese ladder.
 
 | span | series | source |
 |---|---|---|
 | .. 2017-06 | IMF IFS Japan Treasury bill rate | https://fred.stlouisfed.org/series/INTGSTJPM193N |
 | 2017-07 .. | BoJ 3-month uncollateralised call rate | https://www.stat-search.boj.or.jp/ |
 
-The IMF Japanese bill series ends in 2017-06. Overlap agreement across 28 years:
-correlation **0.986**, with the call rate averaging **+0.50 pp** above the bill
-rate — a documented level caveat. In the negative-rate era the joint delta is
-about zero, and Japanese short rates sit near zero throughout the affected span,
-so the effect on the strategy is small.
+The IMF Japanese bill series ends in 2017-06. On the overlap, across 28 years,
+the two agree with correlation **0.986**, with the call rate averaging
+**+0.50 pp** above the bill rate — a known, recorded difference in level. In the
+negative-rate era the difference between the two series (the original note
+calls it the "joint delta") is about zero, and Japanese short rates sit near
+zero throughout the affected span, so the effect on the strategy is small.
 
 Both ladders are monthly, held constant within the month, and made available to
-the model with a two-month-start lag.
+the model only two months after each value's observation date (the setting
+`availability_lag_month_starts = 2`).
 
 ## What is irreducible
 
-1. **Bloomberg's exact index vendor and close convention** for the three equity
-   series. Bounded rather than closed: results are reported at trading delays of
-   1, 5 and 10 days, and the delay-10 column shows how much a mis-timed close
-   could matter.
+These are the gaps that free data cannot close. Each is bounded or approximated,
+not removed.
+
+1. **Bloomberg's exact index vendor and close convention** (which provider's
+   index, and which price counts as the day's close) for the three equity
+   series. We cannot remove this gap, but we can measure how much it could
+   matter: results are reported at trading delays of 1, 5 and 10 days, and the
+   delay-10 column shows how much a mis-timed close could matter.
 2. **GFD's exact bill definitions** for Germany and Japan. Approximated by the
    ladders above, with every splice measured.
 3. **The Japanese pre-2012 total return.** No free official series exists.
-   Reconstructed and validated on a 12-year overlap.
-4. **The German pre-1988 daily path.** The Stehle backcast has been checked
+   Reconstructed and validated on a 12-year overlap (see the Japan section for
+   what was measured, and for which checks were not repeated on the causal
+   series).
+4. **The German pre-1988 daily path.** The Stehle backcast (the pre-1988
+   Kursindex backcast described in the Germany section) has been checked
    against OECD monthly data; no independent *daily* source exists publicly.
 
 ## Refreshing the data: what actually works
 
-Checked 2026-07-28, from this machine, after the morning's fetch had succeeded:
+Checked 2026-07-28, from this machine, after the morning's fetch had succeeded.
+The table shows what each data host returned. The numbers are HTTP status
+codes: 200 means the file was served, 404 means not found, and 429 means the
+host refused because requests came too often.
 
 | host | result |
 |---|---|
-| `query1`/`query2.finance.yahoo.com/v8/finance/chart/...` | **429 Too Many Requests** — both hosts, caret encoded or not |
+| `query1`/`query2.finance.yahoo.com/v8/finance/chart/...` | **429 Too Many Requests** — both hosts, whether the ^ in the symbol was written as %5E or not |
 | `finance.yahoo.com/quote/<sym>/history/` | 404 to a plain client |
-| `stooq.com/q/d/l/?s=...` | 200, but the body is a JavaScript proof-of-work challenge, not a CSV |
+| `stooq.com/q/d/l/?s=...` | 200, but the body is a JavaScript proof-of-work challenge (a puzzle page that only a real browser can solve), not the CSV file |
 | `fred.stlouisfed.org/graph/fredgraph.csv?id=...` | timed out 2026-07-28; **200 on 2026-07-29**, 226,513 bytes in 2.9s |
 | `raw.githubusercontent.com` (Shiller) | 200 |
 | `data-api.ecb.europa.eu` | 200 |
 
 So the Yahoo chart endpoint is open in the sense that it needs no login, but it
-is rate-limited hard enough that it cannot be treated as a dependable feed, and
-Stooq's CSV link now requires a real browser. That is why `stooq_dax_daily.csv`
-is recorded in the contract as manually downloaded on 2026-07-25.
+is rate-limited hard enough (it refuses requests that come too often) that it
+cannot be treated as a dependable feed, and Stooq's CSV link now requires a real
+browser. That is why `stooq_dax_daily.csv` is recorded in the contract as
+manually downloaded on 2026-07-25.
 
-**None of this can break a run.** Fetched inputs are stored under
-`data/external/inputs/` with pinned hashes, and the one series the pipeline
-still fetches live — `DTB3` — is captured into the run's acquisition manifest
-(`data/raw/<config>-<timestamp>/us_cash.csv`) and verified against it rather
-than re-downloaded. The v9 manifest already holds DTB3 for 1969-05-01..2023-12-29,
-14,262 rows.
+**None of this can break the replay of a sealed run** — re-running a run whose
+inputs and outputs were frozen and fingerprinted at the time. (A new
+acquisition, meaning a fresh download of the inputs, still needs FRED to answer
+once.) Fetched inputs are stored under `data/external/inputs/` with pinned
+hashes. The one series the pipeline still fetches live — `DTB3` — is saved into
+the run's acquisition manifest, the record of what that run downloaded
+(`data/raw/<config>-<timestamp>/us_cash.csv`). On replay it is checked against
+that stored copy rather than re-downloaded. Every acquisition since v9.3 —
+including the two published under `data/snapshots/` — holds DTB3 for
+1969-05-01..2023-12-29, 14,262 data rows, with the same sha256 (`62106f6d…`).
 
 If a series ever does need refreshing, download it once in a browser, drop it in
 `data/external/inputs/`, and update the `INPUT_SHA256` pin in
@@ -227,9 +425,9 @@ bytes, which is the property that makes browser downloads acceptable here.
 
 FRED refused this machine on 2026-07-28 and answered normally on 2026-07-29, so
 the v9.3 bundle was acquired through the pipeline rather than by hand. The owner
-separately downloaded the same series from a browser, which turns a convenience
+separately downloaded the same series from a browser. That turns a convenience
 into a real check: an automated fetch and a human one, made independently,
-should agree byte for byte or one of them is wrong.
+should agree byte for byte, or one of them is wrong.
 
 ```
 manual download            sha256 62106f6db8dcade6dc70bdd75ae89dc08720e6fdef7e012bb193aae7d8e74471
@@ -237,15 +435,17 @@ data/raw/shu-replication-expanding-v9-3-20260729T081133Z/us_cash.csv
                            sha256 62106f6db8dcade6dc70bdd75ae89dc08720e6fdef7e012bb193aae7d8e74471
 ```
 
-Identical, so the manual copy was deleted rather than kept as a second source of
-truth: it is already stored under `data/raw/<run>/us_cash.csv` with its hash
-recorded in that run's manifest.
+The two hashes are identical, so the manual copy was deleted rather than kept as
+a second source of truth. The v9.3 raw folder named above is no longer on disk;
+the same bytes, with the same hash, are tracked at
+`data/snapshots/v11-ninit60/raw/shu-replication-calibrated-v11-20260808T073312Z/us_cash.csv`.
 
 One note for anyone repeating the comparison. DTB3 carries **605 blank rows**
 over 1969-2023 — US market holidays, the first three being 1969-05-30,
-1969-07-04 and 1969-07-21. pandas reads those as NaN, and `(a == b).all()` is
-therefore `False` on two byte-identical files. Use `a.equals(b)`, or compare the
-hashes, which is what settles it here.
+1969-07-04 and 1969-07-21. pandas reads those blanks as NaN ("not a number"),
+and because NaN never equals NaN, `(a == b).all()` is `False` on two
+byte-identical files. Use `a.equals(b)`, or compare the hashes, which is what
+settles it here.
 
 The exact request the pipeline makes:
 
@@ -255,13 +455,19 @@ https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTB3&cosd=1969-05-01&coed=202
 
 ## Author artifacts kept as evidence (not data inputs)
 
+Three files from the paper's author are stored in `data/external/inputs/`
+alongside the data inputs. None of them feeds a run. They are kept as evidence
+for the audit notes that cite them.
+
 `data/external/inputs/shu-wolfe-research-2024-10-23-slides.pdf` — Yizhan Shu's
 Wolfe Research presentation deck (2024-10-23), downloaded 2026-07-30 from the
 author's public Google Drive link
 (`https://drive.google.com/file/d/1-8a9GzfyDELUIq0rq7NF2iqmyMikCmGr/view`),
 sha256 `6b20017d8099f3a005159dc78cca2bcc8ee196eff1af296e9bc7dd17ab1bba96`.
-Slides 18-19 print the US state-sequence anchors (HMM 96 shifts / 27.8% bear,
-JM 30 shifts / 19.7% bear) used in
+Slides 18-19 print the US state-sequence anchors — reference figures from the
+author for how the models label the US period: the HMM (hidden Markov model)
+with 96 changes of state and 27.8% of days labelled bear, the JM (jump model)
+with 30 changes and 19.7% bear — used in
 `docs/audit/2026-07-30-deep-research-round2.md`. It is an author artifact, not
 a data source: nothing in it feeds a run, and per CLAUDE.md nothing in it may
 be promoted into a claim about the paper.
@@ -278,5 +484,6 @@ artifact, not a data source.
 NEW deck (2024-04-22), downloaded 2026-07-30 from the author's public Google
 Drive link, sha256
 `4be6671a6ddb19e85c5c698f3e665bc6834b9c996dcb68cecdc279d14c084e0c`. Source of
-the λ_is-vs-λ_oos idea recorded (and excluded from the replication) in the
-same audit note. Author artifact, not a data source.
+the idea of using one jump penalty (λ) when fitting in-sample and a different
+one out-of-sample ("λ_is vs λ_oos"), recorded — and excluded from the
+replication — in the same audit note. Author artifact, not a data source.
