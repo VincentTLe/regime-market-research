@@ -1,0 +1,6 @@
+# Byte-exact files: their sha256 is pinned elsewhere in the repository
+# (configs by config_sha256, contracts by frozen_spec_hash, snapshots by
+# SHA256SUMS and by the sealed manifests). Never convert line endings.
+data/snapshots/**         -text
+configs/**/*.toml         -text
+research/contracts/*.toml -text
