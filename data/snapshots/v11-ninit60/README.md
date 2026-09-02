@@ -27,8 +27,8 @@ published.
 
 The live inputs stay where the code reads them and stay git-ignored:
 `data/external/`, `data/raw/<run>/`, `data/processed/<run>/`. Publishing the
-snapshot at a separate path means checking out this commit can never overwrite
-a locally built input.
+snapshot at a separate path means this commit adds no tracked file at a live
+input path, so checking it out cannot overwrite a locally built input.
 
 `tests/test_data_snapshots.py` checks, on every run, that this folder matches
 `SHA256SUMS`, the config pins, and the acquisition manifest. When a live input
