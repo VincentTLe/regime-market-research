@@ -93,6 +93,11 @@ window, so no *US or German* reconstructed return is scored in the reported
 be read as isolation:
 
 - They sit inside the 3000-day windows that fit the early-1990s models.
+- They also enter the monthly lambda selection directly. For decisions in the
+  early 1990s the eight-year validation window reaches back into 1982-1989, and
+  `select_monthly_candidate` scores every candidate strategy on the returns of
+  those years, so the reconstructed returns can change which lambda is selected
+  and therefore which state is deployed.
 - The expanding standardizer — the step that rescales each feature by the mean
   and standard deviation of every past observation, and never drops an old one —
   keeps them in its mean and standard deviation permanently. So they help set

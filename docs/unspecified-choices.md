@@ -164,8 +164,9 @@ the alternatives have been measured, so the range they span is known
 partly by which recipe reproduced Table-4 economics — a published number. In
 other words, the choice was partly steered by the target. It is therefore
 target-conditioned in the same way the lambda grid is, must be disclosed
-wherever the grid's circularity is disclosed, and **no result may be described
-as independent of it**.
+wherever the grid's circularity is disclosed, and **no fixed-JM result, and no
+comparison against the calibrated fixed-JM baseline, may be described as
+independent of it**. The buy-and-hold and HMM rows do not use it.
 
 Ledger conclusion, already established: no single preprocessing variant
 reproduces Table 3 and Table 4 at the same time. Treat this row as bounded
@@ -204,8 +205,9 @@ agreement with the authors' printed Figure 5 state path. Agreement with
 published output is therefore by construction — the grids were chosen because
 they agree, so their agreement with the paper is not evidence of replication —
 and this row
-carries the same circularity disclosure as row 1: **no result may be described
-as independent of the lambda grid.** Note the two stages: the candidate pool was
+carries the same circularity disclosure as row 1: **no fixed-JM result, and no comparison
+against the calibrated fixed-JM baseline, may be described as independent of
+the lambda grid.** The buy-and-hold and HMM rows do not use it. Note the two stages: the candidate pool was
 filtered on the paper's published Sharpe, turnover and drawdown cells, and only
 the final ranking among survivors avoided strategy metrics. (Turnover is how
 much of the portfolio is bought and sold in a year; row 7 gives the paper's
